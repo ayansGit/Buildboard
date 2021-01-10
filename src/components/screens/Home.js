@@ -18,6 +18,8 @@ import ImagePath from '../../assets/ImagePath';
 import { getRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+import ViewPager from '@react-native-community/viewpager';
+import { Value } from 'react-native-reanimated';
 
 
 
@@ -58,6 +60,7 @@ export default function Home(props) {
             setBannerList(response.data)
             if (response.data.length > 0) {
                 setBannerImg(response.data[0].image)
+                setBannerList(response.data)
             }
 
         } catch (error) {
@@ -83,14 +86,14 @@ export default function Home(props) {
     function renderProductPlaceholder() {
         return (
             <SkeletonPlaceholder>
-                <SkeletonPlaceholder.Item 
-                    flexDirection="row" 
+                <SkeletonPlaceholder.Item
+                    flexDirection="row"
                     alignItems="center" >
                     <SkeletonPlaceholder.Item
-                    marginTop = {normalize(10)}
-                    marginBottom = {normalize(10)}
-                    marginLeft= {normalize(12)}
-                    marginRight={normalize(12)}>
+                        marginTop={normalize(10)}
+                        marginBottom={normalize(10)}
+                        marginLeft={normalize(12)}
+                        marginRight={normalize(12)}>
                         <SkeletonPlaceholder.Item
                         />
                     </SkeletonPlaceholder.Item>
@@ -132,8 +135,10 @@ export default function Home(props) {
                 marginTop: normalize(10), marginBottom: normalize(20),
                 marginLeft: normalize(15), marginRight: normalize(4), alignItems: "center",
                 padding: normalize(10)
-
-            }}>
+            }}
+                onPress={() => {
+                    props.navigation.navigate("ProductList")
+                }}>
                 <Image
                     style={{ width: normalize(90), height: normalize(90), borderRadius: normalize(4) }}
                     source={{ uri: data.item.image }}
@@ -170,7 +175,7 @@ export default function Home(props) {
                             width: "90%", height: normalize(45), borderWidth: normalize(1),
                             borderRadius: normalize(25), flexDirection: "row", justifyContent: "space-between",
                             alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
-                            marginTop: normalize(10)
+                            marginTop: normalize(10), marginBottom: normalize(10)
                         }}>
                             <Text style={{
                                 fontSize: normalize(14), fontFamily: "Roboto-Regular",
@@ -187,7 +192,7 @@ export default function Home(props) {
 
                             <Text style={{
                                 fontFamily: "Roboto-Regular", fontSize: normalize(12),
-                                color: Color.grey, marginTop: normalize(15), marginBottom: normalize(5),
+                                color: Color.grey, marginTop: normalize(5), marginBottom: normalize(5),
                                 marginStart: "6%"
                             }}>Categories</Text>
                             <FlatList
@@ -198,9 +203,22 @@ export default function Home(props) {
                                 keyExtractor={(item, index) => index.toString()}
                             />
 
-                            <Image
-                                style={{ width: "100%", height: normalize(130), marginTop: normalize(10) }}
-                                source={{ uri: bannerImg }} />
+                            <ViewPager 
+                            pageMargin={normalize(10)}
+                            style={{ width: "100%", height: normalize(130), }}>
+                                {bannerList.map((value) => {
+                                    return (
+                                        <View style={{ width: "100%", height: "100%", marginTop: normalize(10) }}>
+                                            <Image
+                                                style={{ width: "100%", height: "100%", }}
+                                                source={{ uri: value.image }} />
+                                        </View>
+                                    )
+                                })}
+
+                            </ViewPager>
+
+
 
                             <Text style={{
                                 fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
@@ -214,8 +232,8 @@ export default function Home(props) {
                                         data={newArrivalProducts}
                                         renderItem={(data) => renderNewArrivalItem(data)}
                                         keyExtractor={(item, index) => index.toString()}
-                                        showsHorizontalScrollIndicator={false} />:
-                                        null
+                                        showsHorizontalScrollIndicator={false} /> :
+                                    null
                             }
 
                             <Text style={{

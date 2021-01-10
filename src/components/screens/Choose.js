@@ -73,7 +73,7 @@ export default function Choose(props) {
                             props.navigation.replace("SignedInNavigator")
                         }}>
                         <Text style={{
-                            fontSize: normalize(16),
+                            fontSize: normalize(15),
                             fontFamily: "Roboto-Bold",
                             color: Color.navyBlue
                         }}>SKIP AND EXPLORE</Text>

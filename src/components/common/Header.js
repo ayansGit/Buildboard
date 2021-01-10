@@ -18,11 +18,11 @@ export default function Header(props) {
                             width: normalize(40), height: normalize(40),
                             padding: normalize(10)
                         }}
-                        onPress = {() =>{
-                            if(props.onDrawerButtonPressed){
-                                props.onDrawerButtonPressed()
-                            }
-                        }}>
+                            onPress={() => {
+                                if (props.onDrawerButtonPressed) {
+                                    props.onDrawerButtonPressed()
+                                }
+                            }}>
                             <Image
                                 style={{ width: "100%", height: "100%" }}
                                 source={ImagePath.navButton}
@@ -39,8 +39,33 @@ export default function Header(props) {
                         </TouchableOpacity>
 
                     </View> :
-                    <View>
+                    <View
+                        style={{ width: "100%", height: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <TouchableOpacity style={{
+                            width: normalize(40), height: normalize(40),
+                            padding: normalize(10)
+                        }}
+                            onPress={() => {
+                                if (props.onBackPressed) {
+                                    props.onBackPressed()
+                                }
+                            }}>
+                            <Image
+                                style={{ width: "100%", height: "100%" }}
+                                source={ImagePath.leftArrow}
+                                resizeMode="contain" />
+                        </TouchableOpacity>
 
+                        <Text style={{ fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue, marginLeft: normalize(20) }}>{props.title}</Text>
+                        </View>
+                        
+                        <TouchableOpacity style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
+                            <Image
+                                style={{ width: "100%", height: "100%" }}
+                                source={ImagePath.shoppingCart}
+                                resizeMode="contain" />
+                        </TouchableOpacity>
                     </View>
             }
         </View>

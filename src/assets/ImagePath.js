@@ -12,5 +12,12 @@ const ImagePath = {
     instaIcon: require('./images/insta_icon.png'),
     fbIcon: require('./images/fb_icon.png'),
     twitterIcon: require('./images/twitter_icon.png'),
+    leftArrow: require('./images/left_arrow.png'),
+    sort: require('./images/sort.png'),
+    filter: require('./images/filter.png'),
+    cancel_order: require('./images/cancel_order.png'),
+    warranty: require('./images/warranty.png'),
+    delivery: require('./images/delivery_icon.png'),
+    button_gradient: require('./images/button_gradient.png'),
 };
 export default ImagePath;
