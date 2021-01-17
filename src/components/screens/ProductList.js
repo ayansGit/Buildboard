@@ -28,9 +28,16 @@ export default function ProductList(props) {
     const [bannerList, setBannerList] = useState([])
     const [bannerImg, setBannerImg] = useState("")
     const [products, setProducts] = useState([])
+    const [title, setTitle] = useState("")
 
     useEffect(() => {
-        getProducts()
+        console.log("Cat id: ", props.route.params)
+        if (props.route.params != undefined) {
+            setTitle(props.route.params.categoryName)
+            getProductsByCategory(props.route.params.categoryId)
+        } else {
+            getProducts()
+        }
     }, [])
 
 
@@ -38,6 +45,17 @@ export default function ProductList(props) {
     async function getProducts() {
         try {
             let response = await getRequest("user/products")
+            console.log("RESPONSE", response)
+            setProducts(response.data)
+
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+    }
+
+    async function getProductsByCategory(id) {
+        try {
+            let response = await getRequest(`user/category/${id}/products`)
             console.log("RESPONSE", response)
             setProducts(response.data)
 
@@ -67,21 +85,22 @@ export default function ProductList(props) {
     }
 
 
-    function renderNewArrivalItem(data) {
+    function renderProductItem(data) {
         return (
             <TouchableOpacity style={{
                 width: "40%",
                 backgroundColor: Color.white,
                 borderRadius: normalize(12), elevation: normalize(5), shadowColor: Color.black,
                 shadowOpacity: 0.3, shadowRadius: normalize(5), shadowOffset: { height: 0, width: 0 },
-                marginTop: normalize(10), 
-                marginBottom: ((data.index == products.length-1)||data.index == products.length-2)? normalize(160): normalize(10),
+                marginTop: normalize(10),
+                marginBottom: ((data.index == products.length - 1) || ((data.index == products.length - 2)
+                    && ((products.length - 2) % 2 == 0))) ? normalize(160) : normalize(10),
                 marginLeft: normalize(10), marginRight: normalize(10), alignItems: "center",
                 padding: normalize(10)
             }}
-            onPress = {() => {
-                props.navigation.navigate("ProductDetail", {productId: data.item.id})
-            }}>
+                onPress={() => {
+                    props.navigation.navigate("ProductDetail", { productId: data.item.id })
+                }}>
                 <Image
                     style={{ width: "100%", height: normalize(110), borderRadius: normalize(6) }}
                     source={{ uri: data.item.image }}
@@ -135,10 +154,10 @@ export default function ProductList(props) {
                     <Header
                         navigation={props.navigation}
                         containNavDrawer={false}
-                        title={"Sofa"}
+                        title={title}
                         onBackPressed={() => {
                             props.navigation.goBack()
-                        }}/>
+                        }} />
                     <View style={{ width: "100%", alignItems: "center" }}>
                         <TouchableOpacity style={{
                             width: "90%", height: normalize(45), borderWidth: normalize(1),
@@ -176,7 +195,7 @@ export default function ProductList(props) {
                             </TouchableOpacity>
                         </View>
                         <FlatList
-                            style={{ width: "100%",}}
+                            style={{ width: "100%", }}
                             columnWrapperStyle={{
                                 flex: 1,
                                 justifyContent: "center",
@@ -184,10 +203,10 @@ export default function ProductList(props) {
                             }}
                             numColumns={2}
                             data={products}
-                            renderItem={(data) => renderNewArrivalItem(data)}
+                            renderItem={(data) => renderProductItem(data)}
                             keyExtractor={(item, index) => index.toString()}
                         />
-                        
+
                     </View>
                 </View>
             </SafeAreaView>

@@ -9,7 +9,7 @@ import {
     FlatList,
     TouchableOpacity,
     Image,
-    Platform
+    Platform, Linking
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
@@ -108,7 +108,14 @@ export default function Home(props) {
             <TouchableOpacity style={{
                 marginTop: normalize(10), marginBottom: normalize(10),
                 marginLeft: normalize(12), marginRight: normalize(12), alignItems: "center"
-            }}>
+            }}
+                onPress={() => {
+                    if (data.index == 9) {
+                        props.navigation.navigate("CategoryList")
+                    } else {
+                        props.navigation.navigate("ProductList", { categoryId: data.item.id, categoryName: data.item.name })
+                    }
+                }}>
                 <Image
                     style={{ height: normalize(30), width: normalize(30), }}
                     source={data.index == 9 ? ImagePath.more : ImagePath.cabinet}
@@ -203,20 +210,25 @@ export default function Home(props) {
                                 keyExtractor={(item, index) => index.toString()}
                             />
 
-                            <ViewPager 
-                            pageMargin={normalize(10)}
-                            style={{ width: "100%", height: normalize(130), }}>
-                                {bannerList.map((value) => {
-                                    return (
-                                        <View style={{ width: "100%", height: "100%", marginTop: normalize(10) }}>
-                                            <Image
-                                                style={{ width: "100%", height: "100%", }}
-                                                source={{ uri: value.image }} />
-                                        </View>
-                                    )
-                                })}
+                            {bannerList.length > 0 ?
+                                <ViewPager
+                                    pageMargin={normalize(10)}
+                                    style={{ width: "100%", height: normalize(130), }}>
+                                    {bannerList.map((value, index) => {
+                                        return (
+                                            <View
+                                                collapsable={false}
+                                                key={index}
+                                                style={{ width: "100%", height: "100%", marginTop: normalize(10) }}>
+                                                <Image
+                                                    style={{ width: "100%", height: "100%", }}
+                                                    source={{ uri: value.image }} />
+                                            </View>
+                                        )
+                                    })}
 
-                            </ViewPager>
+                                </ViewPager> : null}
+
 
 
 
@@ -259,27 +271,40 @@ export default function Home(props) {
                                 flexDirection: "row", alignSelf: "center", marginTop: normalize(15),
                                 marginBottom: normalize(120), alignItems: "center"
                             }}>
-                                <Image
-                                    style={{ height: normalize(45), width: normalize(45) }}
-                                    source={ImagePath.fbIcon}
-                                    resizeMode="cover" />
-                                <Image
-                                    style={{
-                                        height: normalize(38), width: normalize(38),
-                                        marginLeft: normalize(15), marginRight: normalize(15)
-                                    }}
-                                    source={ImagePath.instaIcon}
-                                    resizeMode="cover" />
-                                <Image
-                                    style={{ height: normalize(45), width: normalize(45), }}
-                                    source={ImagePath.twitterIcon}
-                                    resizeMode="cover" />
+                                <TouchableOpacity
+                                    onPress={() => { Linking.openURL("https://www.facebook.com/buildboardfurnishers/") }}>
+                                    <Image
+                                        style={{ height: normalize(45), width: normalize(45) }}
+                                        source={ImagePath.fbIcon}
+                                        resizeMode="cover"
+                                    />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity 
+                                onPress = {() => {Linking.openURL("https://www.instagram.com/buildboardfurnishers/?igshid=hi8trw08gw3r")}}
+                                style={{ marginLeft: normalize(15), marginRight: normalize(15) }}>
+                                    <Image
+                                        style={{
+                                            height: normalize(38), width: normalize(38),
+                                        }}
+                                        source={ImagePath.instaIcon}
+                                        resizeMode="cover" />
+                                </TouchableOpacity>
+
+                                <TouchableOpacity
+                                onPress = {() => Linking.openURL("https://www.linkedin.com/m/company/buildboard-furnishers/")}>
+                                    <Image
+                                        style={{ height: normalize(35), width: normalize(35), }}
+                                        source={ImagePath.linkedIdIcon}
+                                        resizeMode="cover" />
+                                </TouchableOpacity>
+
                             </View>
                         </ScrollView>
 
                     </View>
                 </View>
             </SafeAreaView>
-        </View>
+        </View >
     )
 }

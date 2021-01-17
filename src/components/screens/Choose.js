@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -39,7 +39,8 @@ export default function Choose(props) {
                         source={ImagePath.chooseIcon}
                         resizeMode="contain" />
                     <TouchableOpacity
-                        style={{ width: "80%", height: normalize(45), marginTop: normalize(40) }}>
+                        onPress={() => { props.navigation.navigate("Login") }}
+                        style={{ width: "90%", height: normalize(45), marginTop: normalize(40) }}>
                         <ImageBackground
                             style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
                             source={ImagePath.gradientButton}
@@ -53,8 +54,9 @@ export default function Choose(props) {
                         </ImageBackground>
                     </TouchableOpacity>
                     <TouchableOpacity
+                    onPress={() => { props.navigation.navigate("Signup") }}
                         style={{
-                            width: "80%", height: normalize(45), justifyContent: "center", alignItems: "center",
+                            width: "90%", height: normalize(45), justifyContent: "center", alignItems: "center",
                             marginTop: normalize(20), borderWidth: normalize(1), borderRadius: normalize(25)
                         }}>
                         <Text
