@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -20,7 +20,16 @@ export default function Login(props) {
     useEffect(() => {
         immersiveModeOff()
     }, [])
-    
+
+    const [loginRequest, setLoginRequest] = useState({
+        mobile_no: ""
+    })
+
+    function doLogin(){
+
+        props.navigation.navigate("OtpVerification", {mobileNo: loginRequest.mobile_no})
+    }
+
     return (
         <View style={{ flex: 1 }}>
             {Platform.OS == "android" ?
@@ -44,15 +53,24 @@ export default function Login(props) {
                         <TextInput
                             placeholder={"Mobile number"}
                             placeholderTextColor={Color.grey}
+                            value={loginRequest.mobile_no}
+                            keyboardType="number-pad"
+                            maxLength={10}
                             style={{
                                 width: "95%",
                                 fontFamily: "Roboto-Regular", color: Color.darkGrey,
                                 fontSize: normalize(14)
+                            }}
+                            onChangeText={(text) => {
+                                setLoginRequest({
+                                    ...loginRequest,
+                                    mobile_no: text
+                                })
                             }} />
                     </View>
 
                     <TouchableOpacity
-                        onPress={() => { props.navigation.navigate("Login") }}
+                        onPress={() => doLogin()}
                         style={{ width: "90%", height: normalize(45), marginTop: normalize(20) }}>
                         <ImageBackground
                             style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
@@ -76,9 +94,9 @@ export default function Login(props) {
                             color: Color.grey
                         }}>Not a user yet?</Text>
                         <TouchableOpacity
-                        onPress = {() => {
-                            props.navigation.navigate("Signup")
-                        }}>
+                            onPress={() => {
+                                props.navigation.navigate("Signup")
+                            }}>
                             <Text style={{
                                 fontFamily: "Roboto-Bold", fontSize: normalize(14),
                                 color: Color.navyBlue, margin: normalize(2)

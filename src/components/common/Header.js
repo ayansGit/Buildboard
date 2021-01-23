@@ -31,7 +31,9 @@ export default function Header(props) {
 
                         <Text style={{ fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue }}>{props.title}</Text>
 
-                        <TouchableOpacity style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
+                        <TouchableOpacity
+                            onPress={() => props.navigation.navigate("Cart")}
+                            style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
                             <Image
                                 style={{ width: "100%", height: "100%" }}
                                 source={ImagePath.shoppingCart}
@@ -42,30 +44,33 @@ export default function Header(props) {
                     <View
                         style={{ width: "100%", height: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                         <View style={{ flexDirection: "row", alignItems: "center" }}>
-                        <TouchableOpacity style={{
-                            width: normalize(40), height: normalize(40),
-                            padding: normalize(10)
-                        }}
-                            onPress={() => {
-                                if (props.onBackPressed) {
-                                    props.onBackPressed()
-                                }
-                            }}>
-                            <Image
-                                style={{ width: "100%", height: "100%" }}
-                                source={ImagePath.leftArrow}
-                                resizeMode="contain" />
-                        </TouchableOpacity>
+                            <TouchableOpacity style={{
+                                width: normalize(40), height: normalize(40),
+                                padding: normalize(10)
+                            }}
+                                onPress={() => {
+                                    if (props.onBackPressed) {
+                                        props.onBackPressed()
+                                    }
+                                }}>
+                                <Image
+                                    style={{ width: "100%", height: "100%" }}
+                                    source={ImagePath.leftArrow}
+                                    resizeMode="contain" />
+                            </TouchableOpacity>
 
-                        <Text style={{ fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue, marginLeft: normalize(20) }}>{props.title}</Text>
+                            <Text style={{ fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue, marginLeft: normalize(20) }}>{props.title}</Text>
                         </View>
-                        
-                        <TouchableOpacity style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
-                            <Image
-                                style={{ width: "100%", height: "100%" }}
-                                source={ImagePath.shoppingCart}
-                                resizeMode="contain" />
-                        </TouchableOpacity>
+
+                        {props.showCart ?
+                            <TouchableOpacity
+                                onPress={() => props.navigation.navigate("Cart")}
+                                style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
+                                <Image
+                                    style={{ width: "100%", height: "100%" }}
+                                    source={ImagePath.shoppingCart}
+                                    resizeMode="contain" />
+                            </TouchableOpacity> : null}
                     </View>
             }
         </View>
@@ -77,7 +82,8 @@ Header.propTypes = {
     navigation: PropTypes.object,
     onBackPressed: PropTypes.func,
     onDrawerButtonPressed: PropTypes.func,
-    containNavDrawer: PropTypes.bool
+    containNavDrawer: PropTypes.bool,
+    showCart: PropTypes.bool,
 };
 
 Header.defaultProps = {
@@ -85,5 +91,6 @@ Header.defaultProps = {
     navigation: null,
     onBackPressed: null,
     onDrawerButtonPressed: null,
-    containNavDrawer: true
+    containNavDrawer: true,
+    showCart: true
 };

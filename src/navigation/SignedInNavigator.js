@@ -5,6 +5,7 @@ import ProductList from "../components/screens/ProductList"
 import ProductDetail from "../components/screens/ProductDetail"
 import CategoryList from "../components/screens/CategoryList"
 import ContactUs from "../components/screens/ContactUs"
+import Cart from "../components/screens/Cart"
 
 const Stack = createStackNavigator();
 
@@ -16,6 +17,7 @@ export default function SignedInNavigator() {
         <Stack.Screen name="ProductDetail" component = {ProductDetail}/>
         <Stack.Screen name="CategoryList" component = {CategoryList}/>
         <Stack.Screen name="ContactUs" component = {ContactUs}/>
+        <Stack.Screen name="Cart" component = {Cart}/>
       </Stack.Navigator>
   );
 }

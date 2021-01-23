@@ -66,25 +66,7 @@ export default function Signup(props) {
                                     marginTop: normalize(10)
                                 }}>
                                     <TextInput
-                                        placeholder={"Firstname"}
-                                        textContentType="name"
-                                        numberOfLines={1}
-                                        placeholderTextColor={Color.grey}
-                                        style={{
-                                            width: "95%",
-                                            fontFamily: "Roboto-Regular", color: Color.darkGrey,
-                                            fontSize: normalize(14)
-                                        }} />
-                                </View>
-
-                                <View style={{
-                                    width: "90%", height: normalize(45), borderWidth: normalize(1),
-                                    borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
-                                    alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
-                                    marginTop: normalize(10)
-                                }}>
-                                    <TextInput
-                                        placeholder={"Lastname"}
+                                        placeholder={"Fullname"}
                                         textContentType="name"
                                         numberOfLines={1}
                                         placeholderTextColor={Color.grey}
@@ -115,7 +97,7 @@ export default function Signup(props) {
                                 </View>
 
                                 <TouchableOpacity
-                                    onPress={() => { props.navigation.navigate("Login") }}
+                                    onPress={() => { props.navigation.navigate("OtpVerification") }}
                                     style={{ width: "90%", height: normalize(45), marginTop: normalize(20) }}>
                                     <ImageBackground
                                         style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}

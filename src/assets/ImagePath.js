@@ -22,5 +22,8 @@ const ImagePath = {
     button_gradient: require('./images/button_gradient.png'),
     right_arrow: require('./images/right_arrow.png'),
     contact_us: require('./images/contact_us_bg.png'),
+    delete: require('./images/delete.png'),
+    plus: require('./images/plus.png'),
+    minus: require('./images/minus.png'),
 };
 export default ImagePath;

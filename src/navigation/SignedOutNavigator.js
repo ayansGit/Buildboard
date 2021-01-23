@@ -3,6 +3,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Choose from "../components/screens/Choose"
 import Login from "../components/screens/Login"
 import Signup from "../components/screens/Signup"
+import OtpVerification from "../components/screens/OtpVerification"
 
 const Stack = createStackNavigator();
 
@@ -12,6 +13,7 @@ export default function SignedOutNavigator() {
         <Stack.Screen name="Choose" component={Choose} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={Signup} />
+        <Stack.Screen name="OtpVerification" component={OtpVerification} />
       </Stack.Navigator>
   );
 }
