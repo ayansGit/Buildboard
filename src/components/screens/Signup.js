@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -6,13 +6,15 @@ import {
     View, TouchableOpacity,
     Text,
     TextInput,
-    StatusBar,
+    StatusBar, ActivityIndicator,
     Image, ImageBackground, Platform, KeyboardAvoidingView
 } from 'react-native';
 import Color from '../../assets/Color';
 import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
+import { postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
+import { FieldType, validate } from "../../utils/validation"
 
 
 export default function Signup(props) {
@@ -20,6 +22,43 @@ export default function Signup(props) {
     useEffect(() => {
         immersiveModeOff()
     }, [])
+
+    const [signupRequest, setSignupRequest] = useState({
+        phone: "",
+        full_name: "",
+        email: ""
+    })
+    const [loading, setLoading] = useState(false)
+
+    async function signup() {
+        if (validate(FieldType.phone_number, signupRequest.phone).isError) {
+            alert(validate(FieldType.phone_number, signupRequest.phone).messageError)
+        } else if (validate(FieldType.fullname, signupRequest.full_name).isError) {
+            alert(validate(FieldType.fullname, signupRequest.full_name).messageError)
+        } else if (validate(FieldType.email, signupRequest.email).isError) {
+            alert(validate(FieldType.email, signupRequest.email).messageError)
+        } else {
+            try {
+                setLoading(true)
+                let response = await postRequest("user/store", signupRequest)
+                console.log("SIGN_UP_RESP", response)
+                if (response.success) {
+                    props.navigation.navigate("OtpVerification", { mobileNo: signupRequest.phone, user_id: response.data })
+                } else if (Array.isArray(response.message)) {
+                    var message = ""
+                    response.message.map((value) => { message = message + "\n" + value })
+                    console.log("MSG", message)
+                    alert(message)
+                } else {
+                    alert(response.message)
+                }
+            } catch (error) {
+                alert(error.message)
+            }
+        }
+        setLoading(false)
+    }
+
 
     return (
         <View style={{ flex: 1 }}>
@@ -48,14 +87,24 @@ export default function Signup(props) {
                                     marginTop: normalize(20)
                                 }}>
                                     <TextInput
+                                        editable={!loading}
+                                        value={signupRequest.phone}
                                         placeholder={"Mobile number"}
                                         keyboardType="number-pad"
+                                        returnKeyType="next"
                                         numberOfLines={1}
+                                        maxLength={10}
                                         placeholderTextColor={Color.grey}
                                         style={{
                                             width: "95%",
                                             fontFamily: "Roboto-Regular", color: Color.darkGrey,
                                             fontSize: normalize(14)
+                                        }}
+                                        onChangeText={(text) => {
+                                            setSignupRequest({
+                                                ...signupRequest,
+                                                phone: text
+                                            })
                                         }} />
                                 </View>
 
@@ -66,14 +115,23 @@ export default function Signup(props) {
                                     marginTop: normalize(10)
                                 }}>
                                     <TextInput
-                                        placeholder={"Fullname"}
+                                        editable={!loading}
+                                        value={signupRequest.full_name}
+                                        placeholder={"Full Name"}
                                         textContentType="name"
                                         numberOfLines={1}
+                                        returnKeyType="next"
                                         placeholderTextColor={Color.grey}
                                         style={{
                                             width: "95%",
                                             fontFamily: "Roboto-Regular", color: Color.darkGrey,
                                             fontSize: normalize(14)
+                                        }}
+                                        onChangeText={(text) => {
+                                            setSignupRequest({
+                                                ...signupRequest,
+                                                full_name: text
+                                            })
                                         }} />
                                 </View>
 
@@ -84,31 +142,42 @@ export default function Signup(props) {
                                     marginTop: normalize(10)
                                 }}>
                                     <TextInput
+                                        editable={!loading}
+                                        value={signupRequest.email}
                                         placeholder={"Email"}
                                         textContentType="emailAddress"
                                         keyboardType="email-address"
                                         numberOfLines={1}
+                                        returnKeyType="next"
                                         placeholderTextColor={Color.grey}
                                         style={{
                                             width: "95%",
                                             fontFamily: "Roboto-Regular", color: Color.darkGrey,
                                             fontSize: normalize(14)
+                                        }}
+                                        onChangeText={(text) => {
+                                            setSignupRequest({
+                                                ...signupRequest,
+                                                email: text
+                                            })
                                         }} />
                                 </View>
 
                                 <TouchableOpacity
-                                    onPress={() => { props.navigation.navigate("OtpVerification") }}
+                                    disabled={loading}
+                                    onPress={() => { signup() }}
                                     style={{ width: "90%", height: normalize(45), marginTop: normalize(20) }}>
                                     <ImageBackground
                                         style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
                                         source={ImagePath.gradientButton}
                                         resizeMode="stretch">
-                                        <Text
-                                            style={{
-                                                fontSize: normalize(14),
-                                                fontFamily: "Roboto-Medium",
-                                                color: Color.white
-                                            }}>SIGN UP</Text>
+                                        {loading ? <ActivityIndicator size="small" color={Color.white} /> :
+                                            <Text
+                                                style={{
+                                                    fontSize: normalize(14),
+                                                    fontFamily: "Roboto-Medium",
+                                                    color: Color.white
+                                                }}>SIGN UP</Text>}
                                     </ImageBackground>
                                 </TouchableOpacity>
 
@@ -122,6 +191,7 @@ export default function Signup(props) {
                                         color: Color.grey
                                     }}>Already a user?</Text>
                                     <TouchableOpacity
+                                        disabled={loading}
                                         onPress={() => { props.navigation.navigate("Login") }}>
                                         <Text style={{
                                             fontFamily: "Roboto-Bold", fontSize: normalize(14),

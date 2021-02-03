@@ -1,19 +1,24 @@
 /**
  * @format
  */
+import React from "react"
 import 'react-native-gesture-handler';
-import {AppRegistry} from 'react-native';
+import { AppRegistry } from 'react-native';
 import App from './src/App';
-import {name as appName} from './app.json';
-import {Provider} from 'react-redux';
+import { name as appName } from './app.json';
+import { Provider as StoreProvider } from 'react-redux';
+import { Provider as PaperProvider } from "react-native-paper";
 import store from './src/Store';
+console.disableYellowBox = true;
 
-const BuildBoard = () =>{
-    return(
-        <Provider store={store}>
-            <App/>
-        </Provider>
+const BuildBoard = () => {
+    return (
+        <StoreProvider store={store}>
+            <PaperProvider>
+                <App />
+            </PaperProvider>
+        </StoreProvider>
     )
 }
 
-AppRegistry.registerComponent(appName, () => App);
+AppRegistry.registerComponent(appName, () => BuildBoard);

@@ -7,12 +7,14 @@ import {
     Text,
     TextInput,
     StatusBar,
-    Image, ImageBackground, Platform
+    Image, ImageBackground, Platform, ActivityIndicator
 } from 'react-native';
 import Color from '../../assets/Color';
 import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
+import { postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
+import { FieldType, validate } from "../../utils/validation"
 
 
 export default function Login(props) {
@@ -22,12 +24,49 @@ export default function Login(props) {
     }, [])
 
     const [loginRequest, setLoginRequest] = useState({
-        mobile_no: ""
+        phone: ""
     })
 
-    function doLogin(){
+    const [loading, setLoading] = useState(false)
 
-        props.navigation.navigate("OtpVerification", {mobileNo: loginRequest.mobile_no})
+    async function doLogin() {
+        if (validate(FieldType.phone_number, loginRequest.phone).isError) {
+            alert(validate(FieldType.phone_number, loginRequest.phone).messageError)
+        } else {
+            try {
+                setLoading(true)
+                let response = await postRequest("user/login", loginRequest)
+                console.log("LOGIN_RESP", response)
+                if (response.success || !Array.isArray(response.data)) {
+                    if (response.data.is_verified == "No") {
+                        let request = {
+                            user_id: response.data.user_id
+                        }
+                        let resendOtpResponse = await postRequest("user/resend-otp", request)
+                        if (resendOtpResponse.success) {
+                            props.navigation.navigate("OtpVerification", {
+                                mobileNo: loginRequest.phone,
+                                user_id: response.data.user_id
+                            })
+                        } else alert(resendOtpResponse.message)
+                    } else {
+                        props.navigation.navigate("OtpVerification", {
+                            mobileNo: loginRequest.phone,
+                            user_id: response.data.user_id
+                        })
+                    }
+
+                } else {
+                    alert(response.message)
+                }
+
+            } catch (error) {
+                alert(error.message)
+            }
+        }
+
+        setLoading(false)
+
     }
 
     return (
@@ -51,10 +90,12 @@ export default function Login(props) {
                         marginTop: normalize(20)
                     }}>
                         <TextInput
+                            editable={!loading}
                             placeholder={"Mobile number"}
                             placeholderTextColor={Color.grey}
-                            value={loginRequest.mobile_no}
+                            value={loginRequest.phone}
                             keyboardType="number-pad"
+                            numberOfLines={1}
                             maxLength={10}
                             style={{
                                 width: "95%",
@@ -64,24 +105,27 @@ export default function Login(props) {
                             onChangeText={(text) => {
                                 setLoginRequest({
                                     ...loginRequest,
-                                    mobile_no: text
+                                    phone: text
                                 })
                             }} />
                     </View>
 
                     <TouchableOpacity
+                        disabled={loading}
                         onPress={() => doLogin()}
                         style={{ width: "90%", height: normalize(45), marginTop: normalize(20) }}>
                         <ImageBackground
                             style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
                             source={ImagePath.gradientButton}
                             resizeMode="stretch">
-                            <Text
-                                style={{
-                                    fontSize: normalize(14),
-                                    fontFamily: "Roboto-Medium",
-                                    color: Color.white
-                                }}>LOGIN</Text>
+                            {loading ? <ActivityIndicator size="small" color={Color.white} /> :
+                                <Text
+                                    style={{
+                                        fontSize: normalize(14),
+                                        fontFamily: "Roboto-Medium",
+                                        color: Color.white
+                                    }}>LOGIN</Text>}
+
                         </ImageBackground>
                     </TouchableOpacity>
 
@@ -94,6 +138,7 @@ export default function Login(props) {
                             color: Color.grey
                         }}>Not a user yet?</Text>
                         <TouchableOpacity
+                            disabled={loading}
                             onPress={() => {
                                 props.navigation.navigate("Signup")
                             }}>

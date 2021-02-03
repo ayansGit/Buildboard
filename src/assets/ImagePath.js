@@ -25,5 +25,8 @@ const ImagePath = {
     delete: require('./images/delete.png'),
     plus: require('./images/plus.png'),
     minus: require('./images/minus.png'),
+    add: require('./images/add.png'),
+    edit: require('./images/edit.png'),
+    close: require('./images/close.png'),
 };
 export default ImagePath;

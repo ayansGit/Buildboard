@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {useSelector, useDispatch} from "react-redux"
 import {
     SafeAreaView,
     StyleSheet,
@@ -18,8 +19,14 @@ import normalize from "../../utils/dimen"
 import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
 import { getRequest } from "../../utils/apiRequest"
+import { addToCartRequest } from "../../actions/ProductAction";
 
 export default function Cart(props) {
+
+
+    const cart = useSelector(state => state.product.cart)
+
+
 
     function cartItem(data) {
 
@@ -32,20 +39,21 @@ export default function Cart(props) {
                 <Image
                     style={{
                         width: "30%", height: normalize(60), borderRadius: normalize(1),
-                        borderColor: Color.grey, backgroundColor: Color.white
+                        borderColor: Color.grey, backgroundColor: Color.white, padding:normalize(1)
                     }}
-                    source={ImagePath.dummyProduct} />
+                    resizeMode="contain"
+                    source={{uri: data.item.image}} />
                 <View style={{ width: "50%", paddingTop: normalize(5) }}>
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Medium", fontSize: normalize(12),
                         color: Color.navyBlue
                     }}
-                    >3 seater mini sofa</Text>
+                    >{data.item.name}</Text>
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Bold", fontSize: normalize(16),
                         color: Color.navyBlue, marginTop: normalize(2)
                     }}
-                    >₹30000</Text>
+                    >{`₹${data.item.price}`}</Text>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: normalize(10) }}>
                         <TouchableOpacity>
                             <Image
@@ -55,7 +63,7 @@ export default function Cart(props) {
                         <Text style={{
                             fontFamily: "Roboto-Regular", fontSize: normalize(12),
                             color: Color.grey, marginStart: normalize(3), marginEnd: normalize(3), marginBottom: normalize(1)
-                        }}>10</Text>
+                        }}>1</Text>
                         <TouchableOpacity>
                             <Image
                                 source={ImagePath.minus}
@@ -96,7 +104,7 @@ export default function Cart(props) {
                     <FlatList
                         style={{ width: "100%" }}
                         renderItem={(data) => cartItem(data)}
-                        data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]}
+                        data={cart}
                         keyExtractor={(item, index) => index.toString()} />
 
                     <TouchableOpacity style={{

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {useSelector, useDispatch} from "react-redux"
 import {
     SafeAreaView,
     StyleSheet,
@@ -21,17 +22,22 @@ import { getRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
+import {ADD_TO_CART_REQUEST} from "../../actions/types"
+import { addToCartRequest } from "../../actions/ProductAction";
 
 
 export default function ProductDetail(props) {
 
     const [product, setProduct] = useState(null)
+    const dispatch = useDispatch()
+    const cart = useSelector(state => state.product.cart)
 
     useEffect(() => {
         getProducts()
     }, [])
 
 
+    console.log("HHH")
     async function getProducts() {
         console.log("DATA: ", props.route.params.productId)
         try {
@@ -62,6 +68,11 @@ export default function ProductDetail(props) {
                 </SkeletonPlaceholder.Item>
             </SkeletonPlaceholder>
         )
+    }
+
+    function addToCart() {
+        cart.push(product)
+        dispatch(addToCartRequest(cart))
     }
 
 
@@ -131,7 +142,7 @@ export default function ProductDetail(props) {
                                             fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                             color: Color.darkGrey, marginTop: normalize(10)
                                         }}>{`Category: ${product.category.name}`}</Text>
-                                        
+
                                         <Text style={{
                                             fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                             color: Color.darkGrey, marginTop: normalize(15)
@@ -141,7 +152,7 @@ export default function ProductDetail(props) {
                                             style={{
                                                 fontFamily: "Roboto-Regular", fontSize: normalize(12),
                                                 color: Color.darkGrey, marginTop: normalize(5)
-                                            }}>{product.description? product.description: "No description available"}</Text>
+                                            }}>{product.description ? product.description : "No description available"}</Text>
 
                                         <TouchableOpacity style={{
                                             width: normalize(70), flexDirection: "row", flexWrap: "wrap", paddingTop: normalize(2), paddingBottom: normalize(2),
@@ -277,16 +288,12 @@ export default function ProductDetail(props) {
                                             </View>
                                         </View>
                                     </View> : null}
-
-
-
-
                             </View>
                             <View style={{ height: normalize(20) }}></View>
                             <View style={{ height: normalize(20) }}></View>
                             <View style={{ height: normalize(20) }}></View>
                             <View style={{ height: normalize(20) }}></View>
-                            
+
                         </ScrollView>
                         <View style={{
                             flexDirection: "row", width: "100%", height: normalize(40), bottom: 0,
@@ -296,7 +303,8 @@ export default function ProductDetail(props) {
                                 width: "50%", height: normalize(40),
                                 alignItems: "center", justifyContent: "center", borderTopWidth: normalize(1),
                                 borderTopColor: Color.navyBlue
-                            }}>
+                            }}
+                            onPress = {() => addToCart()}>
                                 <Text style={{
                                     fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                     color: Color.navyBlue
@@ -308,8 +316,7 @@ export default function ProductDetail(props) {
                                         height: "100%", width: "100%", alignItems: "center",
                                         justifyContent: "center"
                                     }}
-                                    source={ImagePath.button_gradient}
-                                >
+                                    source={ImagePath.button_gradient}>
                                     <Text style={{
                                         fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                         color: Color.white

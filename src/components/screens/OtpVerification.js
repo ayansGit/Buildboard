@@ -6,12 +6,13 @@ import {
     View, TouchableOpacity,
     Text,
     TextInput,
-    StatusBar,
+    StatusBar, ActivityIndicator,
     Image, ImageBackground, Platform, KeyboardAvoidingView
 } from "react-native"
 import Color from '../../assets/Color';
 import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
+import { postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 
 export default function OtpVerification(props) {
@@ -26,9 +27,47 @@ export default function OtpVerification(props) {
         otp3: "",
         otp4: ""
     })
+    const [loading, setLoading] = useState(false)
+    const [loading2, setLoading2] = useState(false)
 
-    function verify() {
+    async function verify() {
+        let otp = otpValue.otp1 + otpValue.otp2 + otpValue.otp3 + otpValue.otp4
+        if (otp.length == 4) {
+            let request = {
+                otp: otp,
+                user_id: props.route.params.user_id
+            }
+            try {
+                setLoading(true)
+                let response = await postRequest("user/verify", request)
+                if (response.success) {
+                    props.navigation.replace("SignedInNavigator")
+                } else {
+                    alert(response.message)
+                }
 
+            } catch (error) {
+                alert(error.message)
+            }
+        }
+        setLoading(false)
+    }
+
+    async function resendOtp() {
+        setLoading2(true)
+        try {
+            let request = {
+                user_id: props.route.params.user_id
+            }
+            let response = await postRequest("user/resend-otp", request)
+            if (!response.success) {
+                alert(response.message)
+            }
+
+        } catch (error) {
+            alert(error.message)
+        }
+        setLoading2(false)
     }
 
     return (
@@ -38,14 +77,14 @@ export default function OtpVerification(props) {
                 <StatusBar hidden={false} />}
 
             <SafeAreaView style={{ flex: 1 }}>
-                <Text style={{
-                    fontFamily: "Roboto-Medium",
-                    fontSize: normalize(20), color: Color.navyBlue,
-                    textAlign: "center", marginTop: normalize(12), marginBottom: normalize(12)
-                }}>Verification</Text>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
                     behavior={Platform.OS === "ios" ? "padding" : "height"}>
+                    <Text style={{
+                        fontFamily: "Roboto-Medium",
+                        fontSize: normalize(20), color: Color.navyBlue,
+                        textAlign: "center", marginTop: normalize(12), marginBottom: normalize(12)
+                    }}>Verification</Text>
                     <View style={Platform.OS == "android" ? { flex: 1, alignItems: "center", backgroundColor: Color.white } :
                         { flex: 1, alignItems: "center" }}>
 
@@ -65,6 +104,7 @@ export default function OtpVerification(props) {
                                         alignItems: 'center', margin: normalize(10)
                                     }}>
                                         <TextInput
+                                            editable={!loading && !loading2}
                                             ref={(input) => { otpInput1 = input; }}
                                             value={otpValue.otp1}
                                             keyboardType="number-pad"
@@ -90,6 +130,7 @@ export default function OtpVerification(props) {
                                         alignItems: 'center', margin: normalize(10)
                                     }}>
                                         <TextInput
+                                            editable={!loading && !loading2}
                                             ref={(input) => { otpInput2 = input; }}
                                             value={otpValue.otp2}
                                             keyboardType="number-pad"
@@ -116,6 +157,7 @@ export default function OtpVerification(props) {
                                         alignItems: 'center', margin: normalize(10)
                                     }}>
                                         <TextInput
+                                            editable={!loading && !loading2}
                                             ref={(input) => { otpInput3 = input; }}
                                             value={otpValue.otp3}
                                             keyboardType="number-pad"
@@ -142,6 +184,7 @@ export default function OtpVerification(props) {
                                         alignItems: 'center', margin: normalize(10)
                                     }}>
                                         <TextInput
+                                            editable={!loading && !loading2}
                                             ref={(input) => { otpInput4 = input; }}
                                             value={otpValue.otp4}
                                             keyboardType="number-pad"
@@ -164,18 +207,20 @@ export default function OtpVerification(props) {
                                 </View>
 
                                 <TouchableOpacity
+                                    disabled={loading || loading2}
                                     onPress={() => verify()}
                                     style={{ width: "90%", height: normalize(45), marginTop: normalize(20) }}>
                                     <ImageBackground
                                         style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
                                         source={ImagePath.gradientButton}
                                         resizeMode="stretch">
-                                        <Text
-                                            style={{
-                                                fontSize: normalize(14),
-                                                fontFamily: "Roboto-Medium",
-                                                color: Color.white
-                                            }}>SUBMIT</Text>
+                                        {loading ? <ActivityIndicator size="small" color={Color.white} /> :
+                                            <Text
+                                                style={{
+                                                    fontSize: normalize(14),
+                                                    fontFamily: "Roboto-Medium",
+                                                    color: Color.white
+                                                }}>SUBMIT</Text>}
                                     </ImageBackground>
                                 </TouchableOpacity>
 
@@ -184,16 +229,22 @@ export default function OtpVerification(props) {
                                     marginTop: normalize(20)
                                 }}>
                                     <Text style={{
-                                        fontFamily: 'Roboto-Regular', fontSize: normalize(14), color: Color.navyBlue,
+                                        fontFamily: 'Roboto-Regular', fontSize: normalize(12), color: Color.navyBlue,
                                         textAlign: "center",
                                     }}>Didn't receive your OTP please</Text>
-                                    <TouchableOpacity style={{ padding: normalize(5) }}>
+                                    <TouchableOpacity
+                                        onPress={() => resendOtp()}
+                                        disabled={loading || loading2}
+                                        style={{ padding: normalize(5) }}>
                                         <Text style={{
-                                            fontFamily: 'Roboto-Bold', fontSize: normalize(14), color: Color.navyBlue,
+                                            fontFamily: 'Roboto-Bold', fontSize: normalize(12), color: Color.navyBlue,
                                             textAlign: "center"
                                         }}>Resend</Text>
+
                                     </TouchableOpacity>
 
+                                    {loading2 ?
+                                        <ActivityIndicator size="small" color={Color.navyBlue} /> : null}
                                 </View>
 
                             </View>

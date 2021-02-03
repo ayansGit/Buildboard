@@ -46,61 +46,62 @@ export default function Settings(props) {
                         <TouchableOpacity
                             style={{
                                 width: "90%", height: normalize(45),
-                                backgroundColor: Color.white, borderRadius:normalize(5), elevation: normalize(8),
-                                shadowColor: Color.black, shadowOpacity: 0.3, 
-                                shadowOffset: {height:0, width:0}, shadowRadius: normalize(5),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
                                 marginBottom: normalize(10), marginTop: normalize(20),
                                 justifyContent: "center", alignItems: "center"
-                            }}>
+                            }}
+                            onPress={() => props.navigation.navigate("Account")}>
                             <Text style={{
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
-                                color: Color.navyBlue, 
+                                color: Color.navyBlue,
                             }}>ACCOUNT</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={{
                                 width: "90%", height: normalize(45),
-                                backgroundColor: Color.white, borderRadius:normalize(5), elevation: normalize(8),
-                                shadowColor: Color.black, shadowOpacity: 0.3, 
-                                shadowOffset: {height:0, width:0}, shadowRadius: normalize(5),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
                                 marginBottom: normalize(10),
                                 justifyContent: "center", alignItems: "center"
                             }}
-                            onPress = {() => {props.navigation.navigate("ContactUs")}}>
+                            onPress={() => { props.navigation.navigate("ContactUs") }}>
                             <Text style={{
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
-                                color: Color.navyBlue, 
+                                color: Color.navyBlue,
                             }}>CONTACT US</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={{
                                 width: "90%", height: normalize(45),
-                                backgroundColor: Color.white, borderRadius:normalize(5), elevation: normalize(8),
-                                shadowColor: Color.black, shadowOpacity: 0.3, 
-                                shadowOffset: {height:0, width:0}, shadowRadius: normalize(5),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
                                 marginBottom: normalize(10),
                                 justifyContent: "center", alignItems: "center"
                             }}>
                             <Text style={{
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
-                                color: Color.navyBlue, 
+                                color: Color.navyBlue,
                             }}>PRIVACY POLICY</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={{
                                 width: "90%", height: normalize(45),
-                                backgroundColor: Color.white, borderRadius:normalize(5), elevation: normalize(8),
-                                shadowColor: Color.black, shadowOpacity: 0.3, 
-                                shadowOffset: {height:0, width:0}, shadowRadius: normalize(5),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
                                 marginBottom: normalize(10),
                                 justifyContent: "center", alignItems: "center"
                             }}>
                             <Text style={{
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
-                                color: Color.navyBlue, 
+                                color: Color.navyBlue,
                             }}>LOGOUT</Text>
                         </TouchableOpacity>
                     </View>

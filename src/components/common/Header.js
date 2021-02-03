@@ -4,10 +4,16 @@ import Color from "../../assets/Color"
 import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
 import PropTypes from "prop-types";
-import { connect } from 'react-redux'
+import { useSelector, connect } from 'react-redux'
 var status = ""
 
-export default function Header(props) {
+function Header(props) {
+
+    // const cart = useSelector(state => state.product.cart)
+    // const state = useSelector(state => state)
+    console.log("CART2", props.product)
+    var cart = []
+
 
     return (
         <View style={{ width: "100%", height: normalize(50), paddingLeft: normalize(5), paddingRight: normalize(5) }}>
@@ -38,6 +44,12 @@ export default function Header(props) {
                                 style={{ width: "100%", height: "100%" }}
                                 source={ImagePath.shoppingCart}
                                 resizeMode="contain" />
+                            <Text style={{
+                                fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
+                                backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
+                                paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
+                                position: "absolute", top: normalize(2), right: 0
+                            }}>{props.product.cart.length}</Text>
                         </TouchableOpacity>
 
                     </View> :
@@ -70,6 +82,12 @@ export default function Header(props) {
                                     style={{ width: "100%", height: "100%" }}
                                     source={ImagePath.shoppingCart}
                                     resizeMode="contain" />
+                                <Text style={{
+                                    fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
+                                    backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
+                                    paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
+                                    position: "absolute", top: normalize(2), right: 0
+                                }}>{props.product.cart.length}</Text>
                             </TouchableOpacity> : null}
                     </View>
             }
@@ -94,3 +112,14 @@ Header.defaultProps = {
     containNavDrawer: true,
     showCart: true
 };
+
+const mapStateToProps = state => {
+    return {
+        product: state.product
+    }
+}
+
+export default connect(
+    mapStateToProps,
+    null
+)(Header)

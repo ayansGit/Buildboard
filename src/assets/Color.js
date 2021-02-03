@@ -7,5 +7,6 @@ export default Color = {
     black: "#000000",
     navyBlue: "#353a5f",
     blue: "#5f94ff",
-    red: "#dc070b"
+    red: "#dc070b", 
+    shadow: '#00000040'
 }
