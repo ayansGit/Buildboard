@@ -57,7 +57,6 @@ export default function Home(props) {
         try {
             let response = await getRequest("user/banners")
             console.log("RESPONSE", response)
-            setBannerList(response.data)
             if (response.data.length > 0) {
                 setBannerImg(response.data[0].image)
                 setBannerList(response.data)
@@ -136,24 +135,28 @@ export default function Home(props) {
     function renderNewArrivalItem(data) {
         return (
             <TouchableOpacity style={{
+                width: normalize(120),
+                height: normalize(145),
                 backgroundColor: Color.white,
                 borderRadius: normalize(8), elevation: normalize(5), shadowColor: Color.black,
                 shadowOpacity: 0.3, shadowRadius: normalize(5), shadowOffset: { height: 0, width: 0 },
                 marginTop: normalize(10), marginBottom: normalize(20),
-                marginLeft: normalize(15), marginRight: normalize(4), alignItems: "center",
+                marginLeft: normalize(15), marginRight: normalize(4), alignItems: "center", justifyContent: "center",
                 padding: normalize(10)
             }}
                 onPress={() => {
                     props.navigation.navigate("ProductList")
                 }}>
                 <Image
-                    style={{ width: normalize(90), height: normalize(90), borderRadius: normalize(4) }}
+                    style={{ width: "100%", height: normalize(90), borderRadius: normalize(4) }}
                     source={{ uri: data.item.image }}
                     resizeMode="contain" />
-                <Text style={{
-                    fontFamily: "Roboto-Medium",
-                    fontSize: normalize(12), color: Color.grey, textAlign: "center", marginTop: normalize(5)
-                }}>
+                <Text
+                    numberOfLines={2}
+                    style={{
+                        fontFamily: "Roboto-Medium",
+                        fontSize: normalize(12), color: Color.grey, textAlign: "center", marginTop: normalize(5)
+                    }}>
                     {data.item.name.toUpperCase()}
                 </Text>
 
@@ -197,23 +200,10 @@ export default function Home(props) {
                         <ScrollView style={{ width: "100%" }}
                             showsVerticalScrollIndicator={false}>
 
-                            <Text style={{
-                                fontFamily: "Roboto-Regular", fontSize: normalize(12),
-                                color: Color.grey, marginTop: normalize(5), marginBottom: normalize(5),
-                                marginStart: "6%"
-                            }}>Categories</Text>
-                            <FlatList
-                                style={{ alignSelf: "center", }}
-                                numColumns={4}
-                                data={categoryList}
-                                renderItem={(data) => renderCategoryItem(data)}
-                                keyExtractor={(item, index) => index.toString()}
-                            />
-
                             {bannerList.length > 0 ?
                                 <ViewPager
                                     pageMargin={normalize(10)}
-                                    style={{ width: "100%", height: normalize(130), }}>
+                                    style={{ width: "100%", height: normalize(130), marginTop: normalize(5) }}>
                                     {bannerList.map((value, index) => {
                                         return (
                                             <View
@@ -229,13 +219,26 @@ export default function Home(props) {
 
                                 </ViewPager> : null}
 
+                            {categoryList.length > 0 ? <Text style={{
+                                fontFamily: "Roboto-Regular", fontSize: normalize(12),
+                                color: Color.grey, marginTop: normalize(5), marginBottom: normalize(5),
+                                marginStart: "6%"
+                            }}>Categories</Text> : null}
 
+                            <FlatList
+                                style={{ alignSelf: "center", }}
+                                numColumns={4}
+                                data={categoryList}
+                                renderItem={(data) => renderCategoryItem(data)}
+                                keyExtractor={(item, index) => index.toString()}
+                            />
 
+                            {newArrivalProducts.length > 0 ?
+                                <Text style={{
+                                    fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
+                                    marginLeft: "6%", marginTop: normalize(20)
+                                }}>New Arrivals</Text> : null}
 
-                            <Text style={{
-                                fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
-                                marginLeft: "6%", marginTop: normalize(20)
-                            }}>New Arrivals</Text>
                             {
                                 newArrivalProducts.length > 0 ?
                                     <FlatList
@@ -248,10 +251,13 @@ export default function Home(props) {
                                     null
                             }
 
-                            <Text style={{
-                                fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
-                                marginLeft: "6%", marginTop: normalize(5)
-                            }}>Most Popular</Text>
+                            {newArrivalProducts.length > 0 ?
+                                <Text style={{
+                                    fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
+                                    marginLeft: "6%", marginTop: normalize(5)
+                                }}>Most Popular</Text> : null}
+
+
                             <FlatList
                                 horizontal={true}
                                 style={{ width: "100%", }}
@@ -280,9 +286,9 @@ export default function Home(props) {
                                     />
                                 </TouchableOpacity>
 
-                                <TouchableOpacity 
-                                onPress = {() => {Linking.openURL("https://www.instagram.com/buildboardfurnishers/?igshid=hi8trw08gw3r")}}
-                                style={{ marginLeft: normalize(15), marginRight: normalize(15) }}>
+                                <TouchableOpacity
+                                    onPress={() => { Linking.openURL("https://www.instagram.com/buildboardfurnishers/?igshid=hi8trw08gw3r") }}
+                                    style={{ marginLeft: normalize(15), marginRight: normalize(15) }}>
                                     <Image
                                         style={{
                                             height: normalize(38), width: normalize(38),
@@ -292,7 +298,7 @@ export default function Home(props) {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
-                                onPress = {() => Linking.openURL("https://www.linkedin.com/m/company/buildboard-furnishers/")}>
+                                    onPress={() => Linking.openURL("https://www.linkedin.com/m/company/buildboard-furnishers/")}>
                                     <Image
                                         style={{ height: normalize(35), width: normalize(35), }}
                                         source={ImagePath.linkedIdIcon}

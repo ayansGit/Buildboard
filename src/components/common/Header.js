@@ -25,8 +25,10 @@ function Header(props) {
                             padding: normalize(10)
                         }}
                             onPress={() => {
-                                if (props.onDrawerButtonPressed) {
-                                    props.onDrawerButtonPressed()
+                                if (!props.loading) {
+                                    if (props.onDrawerButtonPressed) {
+                                        props.onDrawerButtonPressed()
+                                    }
                                 }
                             }}>
                             <Image
@@ -38,7 +40,10 @@ function Header(props) {
                         <Text style={{ fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue }}>{props.title}</Text>
 
                         <TouchableOpacity
-                            onPress={() => props.navigation.navigate("Cart")}
+                            onPress={() => {
+                                if (!props.loading)
+                                    props.navigation.navigate("Cart")
+                            }}
                             style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
                             <Image
                                 style={{ width: "100%", height: "100%" }}
@@ -61,8 +66,10 @@ function Header(props) {
                                 padding: normalize(10)
                             }}
                                 onPress={() => {
-                                    if (props.onBackPressed) {
-                                        props.onBackPressed()
+                                    if (!props.loading) {
+                                        if (props.onBackPressed) {
+                                            props.onBackPressed()
+                                        }
                                     }
                                 }}>
                                 <Image
@@ -76,7 +83,10 @@ function Header(props) {
 
                         {props.showCart ?
                             <TouchableOpacity
-                                onPress={() => props.navigation.navigate("Cart")}
+                                onPress={() => {
+                                    if (!props.loading)
+                                        props.navigation.navigate("Cart")
+                                }}
                                 style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
                                 <Image
                                     style={{ width: "100%", height: "100%" }}
@@ -102,6 +112,7 @@ Header.propTypes = {
     onDrawerButtonPressed: PropTypes.func,
     containNavDrawer: PropTypes.bool,
     showCart: PropTypes.bool,
+    loading: PropTypes.bool
 };
 
 Header.defaultProps = {
@@ -110,7 +121,8 @@ Header.defaultProps = {
     onBackPressed: null,
     onDrawerButtonPressed: null,
     containNavDrawer: true,
-    showCart: true
+    showCart: true,
+    loading: false,
 };
 
 const mapStateToProps = state => {

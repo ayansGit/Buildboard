@@ -1,8 +1,9 @@
-import React, {useEffect} from "react"
+import React, { useEffect } from "react"
 import { View, SafeAreaView, StatusBar, ImageBackground, Image } from "react-native"
 import normalize from "../../utils/dimen";
 import ImagePath from "../../assets/ImagePath"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
+import { getToken } from "../../utils/storage";
 
 
 export default function Splash(props) {
@@ -14,7 +15,12 @@ export default function Splash(props) {
 
     function navigate() {
         setTimeout(async () => {
-            props.navigation.replace("SignedOutNavigator")
+            let token = await getToken()
+            console.log("TOKEN", token)
+            if (token != null && token != undefined && token.length > 0) {
+                props.navigation.replace("SignedInNavigator")
+            } else
+                props.navigation.replace("SignedOutNavigator")
         }, 3000)
     }
 

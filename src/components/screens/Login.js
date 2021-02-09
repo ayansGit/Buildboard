@@ -52,7 +52,7 @@ export default function Login(props) {
                     } else {
                         props.navigation.navigate("OtpVerification", {
                             mobileNo: loginRequest.phone,
-                            user_id: response.data.user_id
+                            user_id: response.data
                         })
                     }
 

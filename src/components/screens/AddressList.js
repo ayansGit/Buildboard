@@ -63,7 +63,7 @@ export default function AddressList(props) {
                                                 shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
                                                 marginBottom: data.index == 7 ? normalize(70) : normalize(10), alignItems: "flex-start", alignSelf: "center"
                                             }}
-                                            onPress = {() => props.navigation.navigate("Address")}>
+                                                onPress={() => props.navigation.navigate("Address")}>
                                                 <RadioButton value={data.index} />
 
                                                 <View style={{ width: "75%" }}>
@@ -74,7 +74,8 @@ export default function AddressList(props) {
                                                     }}>99/55 MG Road, Kolkata 700041,  West bengal</Text>
                                                 </View>
 
-                                                <TouchableOpacity>
+                                                <TouchableOpacity
+                                                    onPress={() => props.navigation.navigate("Address")}>
                                                     <Image
                                                         style={{ height: normalize(12), width: normalize(12), margin: normalize(5) }}
                                                         source={ImagePath.delete}
@@ -94,9 +95,11 @@ export default function AddressList(props) {
                             margin: 16,
                             right: 0,
                             bottom: 0,
+                        
                         }}
+                        color = {Color.white}
                         label="Add Address"
-                        onPress={() => console.log('Pressed')}
+                        onPress={() => props.navigation.navigate("Address")}
                     />
                 </View>
             </SafeAreaView>

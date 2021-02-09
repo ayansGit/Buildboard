@@ -22,11 +22,12 @@ import SignedInNavigator from "./navigation/SignedInNavigator"
 import SignedOutNavigator from "./navigation/SignedOutNavigator"
 import Splash from "./components/screens/Splash"
 import transitionConfig from "./utils/transitionConfig"
-const isLoggedIn = true
+import { getToken } from "./utils/storage";
 
 const Stack = createStackNavigator();
 
 export default function App() {
+  
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>

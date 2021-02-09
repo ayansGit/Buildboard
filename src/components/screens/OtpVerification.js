@@ -14,6 +14,7 @@ import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
 import { postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
+import {setToken, setUserId} from "../../utils/storage"
 
 export default function OtpVerification(props) {
 
@@ -37,16 +38,22 @@ export default function OtpVerification(props) {
                 otp: otp,
                 user_id: props.route.params.user_id
             }
+            console.log("Verify Request: ", request)
             try {
                 setLoading(true)
                 let response = await postRequest("user/verify", request)
+                console.log("RESPONSE", JSON.stringify(response))
                 if (response.success) {
+                    setToken(response.token)
+                    setUserId(response.data.id.toString())
                     props.navigation.replace("SignedInNavigator")
                 } else {
+                    resetOtp()
                     alert(response.message)
                 }
 
             } catch (error) {
+                resetOtp()
                 alert(error.message)
             }
         }
@@ -68,6 +75,15 @@ export default function OtpVerification(props) {
             alert(error.message)
         }
         setLoading2(false)
+    }
+
+    function resetOtp(){
+        setOtpValue({
+            otp1: "",
+            otp2: "",
+            otp3: "",
+            otp4: ""
+        })
     }
 
     return (
