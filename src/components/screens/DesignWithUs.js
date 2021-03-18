@@ -6,28 +6,28 @@ import {
     View, KeyboardAvoidingView,
     Text, TextInput,
     StatusBar,
-    FlatList,
+    FlatList, ActivityIndicator,
     TouchableOpacity,
     Image, ImageBackground,
-    Platform, Animated
+    Platform, Animated, ToastAndroid
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
 import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
-import { getRequest } from "../../utils/apiRequest"
+import { getRequest, postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
-import { Value } from 'react-native-reanimated';
-
+import { FieldType, validate } from "../../utils/validation"
 
 
 
 export default function DesignWithUs(props) {
 
+    const TAG = "DesignWithUs"
     const [bannerList, setBannerList] = useState([])
-    const [signupRequest, setSignupRequest] = useState({
+    const [designRequest, setDesignRequest] = useState({
         phone: "",
         full_name: "",
         email: ""
@@ -61,6 +61,36 @@ export default function DesignWithUs(props) {
 
         } catch (error) {
             console.log("ERROR", error)
+        }
+    }
+
+    async function request() {
+
+        setLoading(true)
+        if (validate(FieldType.fullname, designRequest.full_name).isError) {
+            alert(validate(FieldType.fullname, designRequest.full_name).messageError)
+        } else if (validate(FieldType.email, designRequest.email).isError) {
+            alert(validate(FieldType.email, designRequest.email).messageError)
+        } else if (validate(FieldType.phone_number, designRequest.phone).isError) {
+            alert(validate(FieldType.phone_number, designRequest.phone).messageError)
+        } else {
+            try {
+                let response = await postRequest("user/design-with-us", designRequest)
+                console.log(TAG, "  -> Response: ", response)
+                showMessage(response.message)
+
+            } catch (error) {
+                alert(error.message)
+            }
+        }
+        setLoading(false)
+    }
+
+    function showMessage(message) {
+        if (Platform.OS == "android") {
+            ToastAndroid.show(message, ToastAndroid.SHORT);
+        } else {
+            alert(message)
         }
     }
 
@@ -134,7 +164,7 @@ export default function DesignWithUs(props) {
                                 }}>
                                     <TextInput
                                         editable={!loading}
-                                        value={signupRequest.full_name}
+                                        value={designRequest.full_name}
                                         placeholder={"Full Name"}
                                         textContentType="name"
                                         numberOfLines={1}
@@ -146,8 +176,8 @@ export default function DesignWithUs(props) {
                                             fontSize: normalize(14)
                                         }}
                                         onChangeText={(text) => {
-                                            setSignupRequest({
-                                                ...signupRequest,
+                                            setDesignRequest({
+                                                ...designRequest,
                                                 full_name: text
                                             })
                                         }} />
@@ -161,7 +191,7 @@ export default function DesignWithUs(props) {
                                 }}>
                                     <TextInput
                                         editable={!loading}
-                                        value={signupRequest.email}
+                                        value={designRequest.email}
                                         placeholder={"Email"}
                                         textContentType="emailAddress"
                                         keyboardType="email-address"
@@ -174,8 +204,8 @@ export default function DesignWithUs(props) {
                                             fontSize: normalize(14)
                                         }}
                                         onChangeText={(text) => {
-                                            setSignupRequest({
-                                                ...signupRequest,
+                                            setDesignRequest({
+                                                ...designRequest,
                                                 email: text
                                             })
                                         }} />
@@ -189,7 +219,7 @@ export default function DesignWithUs(props) {
                                 }}>
                                     <TextInput
                                         editable={!loading}
-                                        value={signupRequest.phone}
+                                        value={designRequest.phone}
                                         placeholder={"Mobile number"}
                                         keyboardType="number-pad"
                                         returnKeyType="next"
@@ -202,25 +232,27 @@ export default function DesignWithUs(props) {
                                             fontSize: normalize(14)
                                         }}
                                         onChangeText={(text) => {
-                                            setSignupRequest({
-                                                ...signupRequest,
+                                            setDesignRequest({
+                                                ...designRequest,
                                                 phone: text
                                             })
                                         }} />
                                 </View>
 
                                 <TouchableOpacity
+                                    onPress={() => request()}
                                     style={{ width: "90%", height: normalize(45), marginTop: normalize(20), marginBottom: normalize(20) }}>
                                     <ImageBackground
                                         style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
                                         source={ImagePath.gradientButton}
                                         resizeMode="stretch">
-                                        <Text
-                                            style={{
-                                                fontSize: normalize(14),
-                                                fontFamily: "Roboto-Medium",
-                                                color: Color.white
-                                            }}>REACH US</Text>
+                                        {loading ? <ActivityIndicator size="small" color={Color.white} /> :
+                                            <Text
+                                                style={{
+                                                    fontSize: normalize(14),
+                                                    fontFamily: "Roboto-Medium",
+                                                    color: Color.white
+                                                }}>REACH US</Text>}
                                     </ImageBackground>
                                 </TouchableOpacity>
 

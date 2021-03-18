@@ -8,8 +8,8 @@ import {
     StatusBar,
     FlatList,
     TouchableOpacity,
-    Image,
-    Platform
+    Image, ActivityIndicator,
+    Platform,
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
@@ -20,10 +20,45 @@ import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersiv
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
 import AddressDialog from "../common/AddressDialog"
+import { getToken } from "../../utils/storage";
 
 export default function Account(props) {
 
-    const [showAddressDialog, setShowAddressDialog] = useState(false)
+    const TAG = "Account"
+    const [loading, setLoading] = useState(false)
+    const [account, setAccount] = useState({
+        phone: "",
+        full_name: "",
+        email: "",
+        address: ""
+    })
+
+    useEffect(() => {
+        getAccount()
+    }, [])
+
+    async function getAccount() {
+
+        setLoading(true)
+        try {
+            let token = await getToken()
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let response = await getRequest("user/profile", header)
+            console.log(TAG, "-> Account Response: ", JSON.stringify(response))
+            setAccount({
+                phone: response.data.phone,
+                full_name: response.data.full_name,
+                email: response.data.email,
+                address: response.data.address
+            })
+        } catch (error) {
+            alert(error.message)
+        }
+        setLoading(false)
+    }
 
     return (
         <View style={{ flex: 1 }}>
@@ -44,23 +79,27 @@ export default function Account(props) {
                             props.navigation.goBack()
                         }} />
 
+                    {loading ? <ActivityIndicator size="large" color={Color.navyBlue} /> : null}
+
                     <View style={{ width: "100%", alignItems: "center" }}>
 
                         <ScrollView style={{ width: "100%", height: "100%" }}>
                             <View style={{ width: "100%", alignItems: "center" }}>
-                                <TouchableOpacity style={{
-                                    width: "90%", flexDirection: "row", borderRadius: normalize(4),
-                                    padding: normalize(10), marginTop: normalize(20), backgroundColor: Color.white,
-                                    elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
-                                    shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
-                                    marginBottom: normalize(10)
-                                }}>
+                                <TouchableOpacity
+                                    disabled={loading}
+                                    style={{
+                                        width: "90%", flexDirection: "row", borderRadius: normalize(4),
+                                        padding: normalize(10), marginTop: normalize(20), backgroundColor: Color.white,
+                                        elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
+                                        shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
+                                        marginBottom: normalize(10)
+                                    }}>
                                     <View style={{ width: "70%" }}>
                                         <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(9), color: Color.darkGrey }}>Mobile No</Text>
                                         <Text style={{
                                             fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                             marginTop: normalize(5), color: Color.navyBlue
-                                        }}>8981170012</Text>
+                                        }}>{account.phone}</Text>
                                     </View>
 
                                     <Image
@@ -69,19 +108,21 @@ export default function Account(props) {
 
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={{
-                                    width: "90%", flexDirection: "row", borderRadius: normalize(4),
-                                    padding: normalize(10), marginTop: normalize(5), backgroundColor: Color.white,
-                                    elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
-                                    shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
-                                    marginBottom: normalize(10)
-                                }}>
+                                <TouchableOpacity
+                                    disabled={loading}
+                                    style={{
+                                        width: "90%", flexDirection: "row", borderRadius: normalize(4),
+                                        padding: normalize(10), marginTop: normalize(5), backgroundColor: Color.white,
+                                        elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
+                                        shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
+                                        marginBottom: normalize(10)
+                                    }}>
                                     <View style={{ width: "70%" }}>
                                         <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(9), color: Color.darkGrey }}>Full Name</Text>
                                         <Text style={{
                                             fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                             marginTop: normalize(5), color: Color.navyBlue
-                                        }}>Jon Doe</Text>
+                                        }}>{account.full_name}</Text>
                                     </View>
 
                                     <Image
@@ -90,19 +131,21 @@ export default function Account(props) {
 
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={{
-                                    width: "90%", flexDirection: "row", borderRadius: normalize(4),
-                                    padding: normalize(10), marginTop: normalize(5), backgroundColor: Color.white,
-                                    elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
-                                    shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
-                                    marginBottom: normalize(10)
-                                }}>
+                                <TouchableOpacity
+                                    disabled={loading}
+                                    style={{
+                                        width: "90%", flexDirection: "row", borderRadius: normalize(4),
+                                        padding: normalize(10), marginTop: normalize(5), backgroundColor: Color.white,
+                                        elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
+                                        shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
+                                        marginBottom: normalize(10)
+                                    }}>
                                     <View style={{ width: "70%" }}>
                                         <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(9), color: Color.darkGrey }}>Email</Text>
                                         <Text style={{
                                             fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                             marginTop: normalize(5), color: Color.navyBlue
-                                        }}>jon.doe@gmail.com</Text>
+                                        }}>{account.email}</Text>
                                     </View>
 
                                     <Image
@@ -111,24 +154,38 @@ export default function Account(props) {
 
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={{
-                                    width: "90%", flexDirection: "row", borderRadius: normalize(4),
-                                    padding: normalize(10), marginTop: normalize(5), backgroundColor: Color.white,
-                                    elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
-                                    shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
-                                    marginBottom: normalize(20)
-                                }}
-                                onPress = {() => props.navigation.navigate("AddressList")}>
+                                <TouchableOpacity
+                                    disabled={loading}
+                                    style={{
+                                        width: "90%", flexDirection: "row", borderRadius: normalize(4),
+                                        padding: normalize(10), marginTop: normalize(5), backgroundColor: Color.white,
+                                        elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-between", alignItems: "center",
+                                        shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
+                                        marginBottom: normalize(20)
+                                    }}
+                                    onPress={() => {
+                                        if (account.address != undefined) {
+                                            props.navigation.navigate("AddressList")
+                                        } else {
+                                            props.navigation.navigate("Address")
+                                        }
+                                    }}>
                                     <View style={{ width: "70%" }}>
                                         <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(9), color: Color.darkGrey }}>Address</Text>
-                                        <Text
-                                            numberOfLines={2}
-                                            ellipsizeMode="tail"
-                                            style={{
-                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
-                                                marginTop: normalize(5), color: Color.navyBlue
-                                            }}>{"99/55 M.G. Road, Kolkata 700041, West Bengal"}</Text>
+                                        {account.address != undefined ?
+                                            <Text
+                                                numberOfLines={2}
+                                                ellipsizeMode="tail"
+                                                style={{
+                                                    fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                    marginTop: normalize(5), color: Color.navyBlue
+                                                }}>{account.address}</Text> : null}
                                     </View>
+                                    {((account.address == "") || (account.address == undefined)) ?
+                                        !loading ?
+                                            <Image
+                                                style={{ height: normalize(15), width: normalize(15) }}
+                                                source={ImagePath.add} /> : null : null}
 
                                 </TouchableOpacity>
                             </View>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {useSelector, useDispatch} from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 import {
     SafeAreaView,
     StyleSheet,
@@ -11,23 +11,27 @@ import {
     FlatList,
     TouchableOpacity,
     Image,
-    Platform,
-    ImageBackground
+    Platform, ActivityIndicator,
+    ImageBackground,
+    ToastAndroid
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
 import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
-import { getRequest } from "../../utils/apiRequest"
+import { getRequest, postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
-import {ADD_TO_CART_REQUEST} from "../../actions/types"
+import { ADD_TO_CART_REQUEST } from "../../actions/types"
 import { addToCartRequest } from "../../actions/ProductAction";
+import { getToken } from "../../utils/storage";
+
 
 
 export default function ProductDetail(props) {
 
+    const [loading, setLoading] = useState(false)
     const [product, setProduct] = useState(null)
     const dispatch = useDispatch()
     const cart = useSelector(state => state.product.cart)
@@ -51,28 +55,69 @@ export default function ProductDetail(props) {
     }
 
 
-    function renderProductPlaceholder() {
-        return (
-            <SkeletonPlaceholder>
-                <SkeletonPlaceholder.Item
-                    flexDirection="row"
-                    alignItems="center" >
-                    <SkeletonPlaceholder.Item
-                        marginTop={normalize(10)}
-                        marginBottom={normalize(10)}
-                        marginLeft={normalize(12)}
-                        marginRight={normalize(12)}>
-                        <SkeletonPlaceholder.Item
-                        />
-                    </SkeletonPlaceholder.Item>
-                </SkeletonPlaceholder.Item>
-            </SkeletonPlaceholder>
-        )
+
+    async function addToCart() {
+
+        console.log("CART: ", cart)
+        console.log("PRODUCT_ID: ", product.product_id)
+        var isAddedToCart = false
+        for (let i = 0; i < cart.length; i++) {
+            if (cart[i].product_id == product.product_id) {
+                isAddedToCart = true
+                break
+            }
+        }
+        if (!isAddedToCart) {
+            try {
+                setLoading(true)
+                let token = await getToken()
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+                let request = {
+                    vendor_id: product.product_id,
+                    product_id: product.product_id,
+                    quantity: 1,
+                    image: product.image
+                }
+                let response = await postRequest("user/cart/store", request, header)
+                console.log("ADD_TO_CART_RESP", response)
+                if (response.success) {
+                    let cartItem = {
+                        ...product,
+                        ...response.data
+                    }
+                    cart.push(cartItem)
+                    dispatch(addToCartRequest(cart))
+                } else if (Array.isArray(response.message)) {
+                    var message = ""
+                    response.message.map((value) => { message = message + "\n" + value })
+                    console.log("MSG", message)
+                    alert(message)
+                } else {
+                    alert(response.message)
+                }
+            } catch (error) {
+                alert(error.message)
+            }
+            setLoading(false)
+        } else {
+            if (Platform.OS == "android")
+                ToastAndroid.show("Product already added to cart", ToastAndroid.SHORT)
+            else alert("Product already added to cart")
+        }
+
+
     }
 
-    function addToCart() {
-        cart.push(product)
+    function buyNow() {
+        let tempProduct = product
+        tempProduct.quantity = 1
+        tempProduct.vendor_id= product.product_id
+        cart.push(tempProduct)
         dispatch(addToCartRequest(cart))
+        props.navigation.navigate("OrderSummary", { cartList: cart })
     }
 
 
@@ -123,12 +168,31 @@ export default function ProductDetail(props) {
                                                     resizeMode="contain" />
                                             </View>
                                         </ViewPager>
+
+                                        <View style={{ flexDirection: "row", alignSelf: "center", marginTop: normalize(10) }}>
+                                            <TouchableOpacity style={{
+                                                height: normalize(15), width: normalize(15),
+                                                borderRadius: normalize(10), backgroundColor: Color.black, margin: normalize(5)
+                                            }} />
+                                            <TouchableOpacity style={{
+                                                height: normalize(15), width: normalize(15),
+                                                borderRadius: normalize(10), backgroundColor: Color.red, margin: normalize(5)
+                                            }} />
+                                            <TouchableOpacity style={{
+                                                height: normalize(15), width: normalize(15),
+                                                borderRadius: normalize(10), backgroundColor: Color.navyBlue, margin: normalize(5)
+                                            }} />
+                                            <TouchableOpacity style={{
+                                                height: normalize(15), width: normalize(15),
+                                                borderRadius: normalize(10), backgroundColor: Color.black, margin: normalize(5)
+                                            }} />
+                                        </View>
                                     </View> : null}
 
 
                                 {product ?
 
-                                    <View style={{ width: "90%" }}>
+                                    <View style={{ width: "90%", marginTop: normalize(20) }}>
                                         <Text style={{
                                             fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                             color: Color.darkGrey,
@@ -153,6 +217,12 @@ export default function ProductDetail(props) {
                                                 fontFamily: "Roboto-Regular", fontSize: normalize(12),
                                                 color: Color.darkGrey, marginTop: normalize(5)
                                             }}>{product.description ? product.description : "No description available"}</Text>
+
+                                        {/* <HtmlText style={{
+                                            fontFamily: "Roboto-Regular", fontSize: normalize(12),
+                                            color: Color.darkGrey, marginTop: normalize(5)
+                                        }}
+                                            html={product.description ? product.description : "No description available"} /> */}
 
                                         <TouchableOpacity style={{
                                             width: normalize(70), flexDirection: "row", flexWrap: "wrap", paddingTop: normalize(2), paddingBottom: normalize(2),
@@ -299,18 +369,25 @@ export default function ProductDetail(props) {
                             flexDirection: "row", width: "100%", height: normalize(40), bottom: 0,
                             position: "absolute", backgroundColor: Color.white
                         }}>
-                            <TouchableOpacity style={{
-                                width: "50%", height: normalize(40),
-                                alignItems: "center", justifyContent: "center", borderTopWidth: normalize(1),
-                                borderTopColor: Color.navyBlue
-                            }}
-                            onPress = {() => addToCart()}>
-                                <Text style={{
-                                    fontFamily: "Roboto-Medium", fontSize: normalize(14),
-                                    color: Color.navyBlue
-                                }}>ADD TO CART</Text>
+                            <TouchableOpacity
+                                disabled={loading}
+                                style={{
+                                    width: "50%", height: normalize(40),
+                                    alignItems: "center", justifyContent: "center", borderTopWidth: normalize(1),
+                                    borderTopColor: Color.navyBlue
+                                }}
+                                onPress={() => addToCart()}>
+                                {loading ? <ActivityIndicator size="small" color={Color.navyBlue} /> :
+                                    <Text style={{
+                                        fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                        color: Color.navyBlue
+                                    }}>ADD TO CART</Text>}
+
                             </TouchableOpacity>
-                            <TouchableOpacity style={{ width: "50%", height: normalize(40), }}>
+                            <TouchableOpacity
+                                disabled={loading}
+                                onPress={() => { buyNow() }}
+                                style={{ width: "50%", height: normalize(40), }}>
                                 <ImageBackground
                                     style={{
                                         height: "100%", width: "100%", alignItems: "center",

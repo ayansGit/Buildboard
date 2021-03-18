@@ -51,13 +51,12 @@ export default function Settings(props) {
         }
         try {
             let response = await postRequest("user/logout", null, header)
-            setToken("")
-            props.navigation.replace("SignedOutNavigator")
-            ToastAndroid.show(response.message, ToastAndroid.SHORT);
-
         } catch (error) {
-            alert(error.message)
+            console.log(error.message)
         }
+        setToken("")
+        props.navigation.replace("SignedOutNavigator")
+        ToastAndroid.show("You are logged out", ToastAndroid.SHORT);
         setLoading(false)
 
     }

@@ -28,5 +28,7 @@ const ImagePath = {
     add: require('./images/add.png'),
     edit: require('./images/edit.png'),
     close: require('./images/close.png'),
+    tracking: require('./images/tracking.png'),
+    track2: require('./images/track2.png'),
 };
 export default ImagePath;

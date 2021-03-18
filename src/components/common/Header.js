@@ -9,17 +9,16 @@ var status = ""
 
 function Header(props) {
 
-    // const cart = useSelector(state => state.product.cart)
-    // const state = useSelector(state => state)
-    console.log("CART2", props.product)
     var cart = []
-
 
     return (
         <View style={{ width: "100%", height: normalize(50), paddingLeft: normalize(5), paddingRight: normalize(5) }}>
             {
                 props.containNavDrawer ?
                     <View style={{ width: "100%", height: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                        
+                        <Text style={{ width: "100%", fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue , position: "absolute", textAlign: "center"}}>{props.title}</Text>
+                        
                         <TouchableOpacity style={{
                             width: normalize(40), height: normalize(40),
                             padding: normalize(10)
@@ -37,25 +36,39 @@ function Header(props) {
                                 resizeMode="contain" />
                         </TouchableOpacity>
 
-                        <Text style={{ fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue }}>{props.title}</Text>
+                        <View style={{ flexDirection: "row", alignItems: "center" }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (!props.loading)
+                                        props.navigation.navigate("TrackingList")
+                                }}
+                                style={{ width: normalize(45), height: normalize(45), padding: normalize(5), marginRight: normalize(5), marginBottom: normalize(5) }}>
+                                <Image
+                                    style={{ width: "100%", height: "100%" }}
+                                    source={ImagePath.tracking}
+                                    resizeMode="contain" />
+                            </TouchableOpacity>
 
-                        <TouchableOpacity
-                            onPress={() => {
-                                if (!props.loading)
-                                    props.navigation.navigate("Cart")
-                            }}
-                            style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
-                            <Image
-                                style={{ width: "100%", height: "100%" }}
-                                source={ImagePath.shoppingCart}
-                                resizeMode="contain" />
-                            <Text style={{
-                                fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
-                                backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
-                                paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
-                                position: "absolute", top: normalize(2), right: 0
-                            }}>{props.product.cart.length}</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (!props.loading)
+                                        props.navigation.navigate("Cart")
+                                }}
+                                style={{ width: normalize(35), height: normalize(35), padding: normalize(5), marginEnd: normalize(5) }}>
+                                <Image
+                                    style={{ width: "100%", height: "100%" }}
+                                    source={ImagePath.shoppingCart}
+                                    resizeMode="contain" />
+                                {props.product.quantity > 0 ?
+                                    <Text style={{
+                                        fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
+                                        backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
+                                        paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
+                                        position: "absolute", top: normalize(2), right: 0
+                                    }}>{props.product.quantity}</Text> : null}
+                            </TouchableOpacity>
+                        </View>
+
 
                     </View> :
                     <View
@@ -87,17 +100,19 @@ function Header(props) {
                                     if (!props.loading)
                                         props.navigation.navigate("Cart")
                                 }}
-                                style={{ width: normalize(45), height: normalize(45), padding: normalize(10) }}>
+                                style={{ width: normalize(35), height: normalize(35), padding: normalize(5), marginEnd: normalize(5) }}>
                                 <Image
                                     style={{ width: "100%", height: "100%" }}
                                     source={ImagePath.shoppingCart}
                                     resizeMode="contain" />
-                                <Text style={{
-                                    fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
-                                    backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
-                                    paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
-                                    position: "absolute", top: normalize(2), right: 0
-                                }}>{props.product.cart.length}</Text>
+                                {props.product.quantity > 0 ?
+                                    <Text style={{
+                                        fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
+                                        backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
+                                        paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
+                                        position: "absolute", top: normalize(2), right: 0
+                                    }}>{props.product.quantity}</Text> : null}
+
                             </TouchableOpacity> : null}
                     </View>
             }

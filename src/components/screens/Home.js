@@ -105,7 +105,7 @@ export default function Home(props) {
     function renderCategoryItem(data) {
         return (
             <TouchableOpacity style={{
-                marginTop: normalize(10), marginBottom: normalize(10),
+                marginTop: normalize(10), marginBottom: normalize(5),
                 marginLeft: normalize(12), marginRight: normalize(12), alignItems: "center"
             }}
                 onPress={() => {
