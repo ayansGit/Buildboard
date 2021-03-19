@@ -20,7 +20,7 @@ import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersiv
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
 import AddressDialog from "../common/AddressDialog"
-import { getToken } from "../../utils/storage";
+import { getToken, getAddress } from "../../utils/storage";
 
 export default function Account(props) {
 
@@ -33,15 +33,32 @@ export default function Account(props) {
         address: ""
     })
 
+
     useEffect(() => {
-        getAccount()
-    }, [])
+        // getOrderList()
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            // The screen is focused
+            // Call any action
+            getAccount()
+        });
+        return unsubscribe
+    }, [props.navigation])
+
+
 
     async function getAccount() {
 
         setLoading(true)
         try {
             let token = await getToken()
+            let addressVal = await getAddress()
+            // if (addressVal != null && addressVal != undefined && addressVal.length > 0) {
+            //     setAccount({
+            //         ...account,
+            //         address: addressVal
+            //     })
+            // }
+
             let header = {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + token
@@ -49,10 +66,10 @@ export default function Account(props) {
             let response = await getRequest("user/profile", header)
             console.log(TAG, "-> Account Response: ", JSON.stringify(response))
             setAccount({
+                address: (addressVal != null && addressVal != undefined && addressVal.length > 0) ? addressVal: "",
                 phone: response.data.phone,
                 full_name: response.data.full_name,
                 email: response.data.email,
-                address: response.data.address
             })
         } catch (error) {
             alert(error.message)
@@ -164,11 +181,12 @@ export default function Account(props) {
                                         marginBottom: normalize(20)
                                     }}
                                     onPress={() => {
-                                        if (account.address != undefined) {
-                                            props.navigation.navigate("AddressList")
-                                        } else {
-                                            props.navigation.navigate("Address")
-                                        }
+                                        // if (account.address != undefined) {
+                                        //     props.navigation.navigate("AddressList")
+                                        // } else {
+                                        //     props.navigation.navigate("Address")
+                                        // }
+                                        props.navigation.navigate("AddressList", {isAccount: true})
                                     }}>
                                     <View style={{ width: "70%" }}>
                                         <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(9), color: Color.darkGrey }}>Address</Text>

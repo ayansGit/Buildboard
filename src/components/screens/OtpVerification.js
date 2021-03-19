@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useSelector, useDispatch } from "react-redux"
 import {
     SafeAreaView,
     StyleSheet,
@@ -7,16 +8,21 @@ import {
     Text,
     TextInput,
     StatusBar, ActivityIndicator,
-    Image, ImageBackground, Platform, KeyboardAvoidingView
+    Image, ImageBackground, Platform, KeyboardAvoidingView,
 } from "react-native"
 import Color from '../../assets/Color';
 import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
-import { postRequest } from "../../utils/apiRequest"
+import { postRequest, getRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
-import {setToken, setUserId} from "../../utils/storage"
+import {setToken, setUserId, setUserName, setEmail, setPhone} from "../../utils/storage"
+import { addToCartRequest } from "../../actions/ProductAction";
+import { addStateRequest } from "../../actions/UserAction";
 
 export default function OtpVerification(props) {
+
+
+    const dispatch = useDispatch()
 
     var otpInput1 = null
     var otpInput2 = null
@@ -44,8 +50,14 @@ export default function OtpVerification(props) {
                 let response = await postRequest("user/verify", request)
                 console.log("RESPONSE", JSON.stringify(response))
                 if (response.success) {
+                    await getCartList(response.token)
+                    await getStateList(response.token)
                     setToken(response.token)
                     setUserId(response.data.id.toString())
+                    setUserName(response.data.full_name)
+                    setEmail(response.data.email)
+                    console.log("PHONE", response.data.phone)
+                    setPhone(response.data.phone.toString())
                     props.navigation.replace("SignedInNavigator")
                 } else {
                     resetOtp()
@@ -84,6 +96,39 @@ export default function OtpVerification(props) {
             otp3: "",
             otp4: ""
         })
+    }
+
+    async function getCartList(token) {
+        try {
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let response = await getRequest(`user/cart/list`, header)
+            console.log("RESPONSE", response)
+            if (response.success) {
+                dispatch(addToCartRequest(response.data))
+            }
+
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+    }
+
+    async function getStateList(token) {
+        try {
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let response = await getRequest(`user/states`, header)
+            console.log("RESPONSE", response)
+            if (response.success) {
+                dispatch(addStateRequest(response.data))
+            }
+        } catch (error) {
+            console.log("ERROR", error)
+        }
     }
 
     return (

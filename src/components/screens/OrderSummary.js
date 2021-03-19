@@ -22,7 +22,7 @@ import ImagePath from '../../assets/ImagePath';
 import { getRequest, postRequest } from "../../utils/apiRequest"
 import { addToCartRequest } from "../../actions/ProductAction";
 import { Checkbox, FAB } from 'react-native-paper';
-import { getUserId, getToken } from "../../utils/storage";
+import { getUserId, getToken, getAddress, getUserName, getPhone } from "../../utils/storage";
 
 export default function OrderSummary(props) {
 
@@ -30,6 +30,32 @@ export default function OrderSummary(props) {
     const dispatch = useDispatch()
     const [isCod, setCod] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [address, setAddress] = useState("")
+    const [name, setName] = useState("")
+    const [phone, setPhone] = useState("")
+
+    useEffect(() => {
+        // getOrderList()
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            // The screen is focused
+            // Call any action
+            initialize()
+        });
+        return unsubscribe
+    }, [props.navigation])
+
+
+    async function initialize() {
+        let addressVal = await getAddress()
+        let name = await getUserName()
+        let phoneVal = await getPhone()
+        if (addressVal != null && addressVal != undefined && addressVal.length > 0) {
+            setAddress(addressVal)
+        }
+        setName(name)
+        setPhone(phoneVal)
+
+    }
 
     async function placeOrder() {
         setLoading(true)
@@ -48,9 +74,9 @@ export default function OrderSummary(props) {
                 product_name: cartList[i].name,
                 product_image: cartList[i].image,
                 product_price: cartList[i].price,
-                full_name: "Jon Doe",
-                address_id: "kolkata",
-                phone: "8981170012",
+                full_name: name,
+                address_id: address,
+                phone: phone,
                 payment_type: "cod",
                 transaction_id: null
             })
@@ -122,9 +148,17 @@ export default function OrderSummary(props) {
     function getProductPrice() {
         let price = 0;
         for (let i = 0; i < cart.length; i++) {
-            price = price + cart[i].price
+            price = (price + cart[i].price)* cart[i].quantity
         }
         return price
+    }
+
+    function getTotalProductQuantity(params) {
+        let quantity = 0
+        for (let i = 0; i < cart.length; i++) {
+            quantity = quantity + cart[i].quantity
+        }
+        return quantity
     }
 
     return (
@@ -163,13 +197,15 @@ export default function OrderSummary(props) {
                                 fontSize: normalize(12), color: Color.black,
                                 fontFamily: "Roboto-Medium",
                             }}>Address:</Text>
-                            <Text style={{
-                                width: "80%", fontSize: normalize(12), color: Color.darkGrey,
-                                fontFamily: "Roboto-Regular", marginTop: normalize(2)
-                            }}>1B/10 AGC Bose Road, Kolkata: 700020, West Bengal</Text>
+                            {address.length > 0 ?
+                                <Text style={{
+                                    width: "80%", fontSize: normalize(12), color: Color.darkGrey,
+                                    fontFamily: "Roboto-Regular", marginTop: normalize(2)
+                                }}>{address}</Text> : null}
+
 
                             <TouchableOpacity
-                                onPress={() => props.navigation.navigate("AddressList")}
+                                onPress={() => props.navigation.navigate("AddressList", {isAccount: false})}
                                 style={{
                                     backgroundColor: Color.blue, borderRadius: normalize(5),
                                     elevation: normalize(8),
@@ -180,7 +216,7 @@ export default function OrderSummary(props) {
                                     fontSize: normalize(10), fontFamily: "Roboto-Regular",
                                     color: Color.white, marginTop: normalize(6), marginBottom: normalize(6),
                                     marginLeft: normalize(20), marginRight: normalize(20)
-                                }}>CHANGE</Text>
+                                }}>{address.length > 0 ? "CHANGE" : "ADD"}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -206,7 +242,7 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(12), color: Color.darkGrey,
                                     fontFamily: "Roboto-Regular", marginTop: normalize(10), marginLeft: normalize(10)
-                                }}>{`Price (${cart.length} items):`}</Text>
+                                }}>{`Price (${getTotalProductQuantity()} items):`}</Text>
 
                                 <Text style={{
                                     fontSize: normalize(14), color: Color.navyBlue,

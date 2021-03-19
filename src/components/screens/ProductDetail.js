@@ -13,7 +13,7 @@ import {
     Image,
     Platform, ActivityIndicator,
     ImageBackground,
-    ToastAndroid
+    ToastAndroid, Alert
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
@@ -31,6 +31,7 @@ import { getToken } from "../../utils/storage";
 
 export default function ProductDetail(props) {
 
+    const [isSignedIn, setSignedIn] = useState(false)
     const [loading, setLoading] = useState(false)
     const [product, setProduct] = useState(null)
     const dispatch = useDispatch()
@@ -43,6 +44,12 @@ export default function ProductDetail(props) {
 
     console.log("HHH")
     async function getProducts() {
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            setSignedIn(true)
+        } else {
+            setSignedIn(false)
+        }
         console.log("DATA: ", props.route.params.productId)
         try {
             let response = await getRequest(`user/product/${props.route.params.productId}/details`)
@@ -114,12 +121,27 @@ export default function ProductDetail(props) {
     function buyNow() {
         let tempProduct = product
         tempProduct.quantity = 1
-        tempProduct.vendor_id= product.product_id
+        tempProduct.vendor_id = product.product_id
         cart.push(tempProduct)
         dispatch(addToCartRequest(cart))
         props.navigation.navigate("OrderSummary", { cartList: cart })
     }
 
+    function showLogintAlert() {
+        Alert.alert(
+            "Alert",
+            "You have to login first",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel"
+                },
+                { text: "OK", onPress: () => { props.navigation.navigate("SignedOutNavigator") } }
+            ],
+            { cancelable: false }
+        );
+    }
 
     return (
         <View style={{ flex: 1 }}>
@@ -376,7 +398,13 @@ export default function ProductDetail(props) {
                                     alignItems: "center", justifyContent: "center", borderTopWidth: normalize(1),
                                     borderTopColor: Color.navyBlue
                                 }}
-                                onPress={() => addToCart()}>
+                                onPress={() => {
+                                    if (isSignedIn) {
+                                        addToCart()
+                                    } else {
+                                        showLogintAlert()
+                                    }
+                                }}>
                                 {loading ? <ActivityIndicator size="small" color={Color.navyBlue} /> :
                                     <Text style={{
                                         fontFamily: "Roboto-Medium", fontSize: normalize(14),
@@ -386,7 +414,12 @@ export default function ProductDetail(props) {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 disabled={loading}
-                                onPress={() => { buyNow() }}
+                                onPress={() => { 
+                                    if (isSignedIn) {
+                                        buyNow()
+                                    } else {
+                                        showLogintAlert()
+                                    } }}
                                 style={{ width: "50%", height: normalize(40), }}>
                                 <ImageBackground
                                     style={{

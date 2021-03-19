@@ -19,12 +19,31 @@ import { getRequest, postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
-import { getToken, setToken, } from "../../utils/storage"
+import { getToken, setToken, setAddress, setUserId, } from "../../utils/storage"
 
 
 export default function Settings(props) {
 
     const [loading, setLoading] = useState(false)
+    const [isSignedIn, setSignedIn] = useState(false)
+    useEffect(() => {
+        // getOrderList()
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            // The screen is focused
+            // Call any action
+            initialize()
+        });
+        return unsubscribe
+    }, [props.navigation])
+
+    async function initialize() {
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            setSignedIn(true)
+        } else {
+            setSignedIn(false)
+        }
+    }
 
     function showLogoutAlert() {
         Alert.alert(
@@ -37,6 +56,22 @@ export default function Settings(props) {
                     style: "cancel"
                 },
                 { text: "OK", onPress: () => logout() }
+            ],
+            { cancelable: false }
+        );
+    }
+
+    function showLogintAlert() {
+        Alert.alert(
+            "Alert",
+            "You have to login first",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel"
+                },
+                { text: "OK", onPress: () => { props.navigation.navigate("SignedOutNavigator") } }
             ],
             { cancelable: false }
         );
@@ -55,6 +90,8 @@ export default function Settings(props) {
             console.log(error.message)
         }
         setToken("")
+        setAddress("")
+        setUserId("")
         props.navigation.replace("SignedOutNavigator")
         ToastAndroid.show("You are logged out", ToastAndroid.SHORT);
         setLoading(false)
@@ -92,7 +129,12 @@ export default function Settings(props) {
                                 marginBottom: normalize(10), marginTop: normalize(20),
                                 justifyContent: "center", alignItems: "center"
                             }}
-                            onPress={() => props.navigation.navigate("Account")}>
+                            onPress={() => {
+                                if (isSignedIn)
+                                    props.navigation.navigate("Account")
+                                else showLogintAlert()
+
+                            }}>
                             <Text style={{
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
                                 color: Color.navyBlue,
@@ -132,24 +174,26 @@ export default function Settings(props) {
                             }}>PRIVACY POLICY</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            disabled={loading}
-                            style={{
-                                width: "90%", height: normalize(45),
-                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
-                                shadowColor: Color.black, shadowOpacity: 0.3,
-                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
-                                marginBottom: normalize(10),
-                                justifyContent: "center", alignItems: "center"
-                            }}
-                            onPress={() => showLogoutAlert()}>
-                            {loading ? <ActivityIndicator size="small" color={Color.navyBlue} /> :
-                                <Text style={{
-                                    fontFamily: "Roboto-Medium", fontSize: normalize(12),
-                                    color: Color.navyBlue,
-                                }}>LOGOUT</Text>}
+                        {isSignedIn ?
+                            <TouchableOpacity
+                                disabled={loading}
+                                style={{
+                                    width: "90%", height: normalize(45),
+                                    backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                    shadowColor: Color.black, shadowOpacity: 0.3,
+                                    shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
+                                    marginBottom: normalize(10),
+                                    justifyContent: "center", alignItems: "center"
+                                }}
+                                onPress={() => showLogoutAlert()}>
+                                {loading ? <ActivityIndicator size="small" color={Color.navyBlue} /> :
+                                    <Text style={{
+                                        fontFamily: "Roboto-Medium", fontSize: normalize(12),
+                                        color: Color.navyBlue,
+                                    }}>LOGOUT</Text>}
 
-                        </TouchableOpacity>
+                            </TouchableOpacity> : null}
+
                     </View>
                 </View>
             </SafeAreaView>
