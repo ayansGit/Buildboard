@@ -121,7 +121,7 @@ function StatePicker(props) {
 
         <View style={{ width: props.width, }}>
             {props.placeholder != "" ?
-                <Text style={{ fontFamily: "Lato-Bold", fontSize: normalize(12), marginBottom: normalize(5), }}>{props.placeholder}</Text> : null}
+                <Text style={{ fontFamily: "Roboto-Bold", fontSize: normalize(12), marginBottom: normalize(5), }}>{props.placeholder}</Text> : null}
 
             {Platform.OS == "ios" ?
                 <TouchableOpacity
@@ -131,7 +131,7 @@ function StatePicker(props) {
                     onPress={() => {
                         toggleShowDropdown()
                     }}>
-                    <Text numberOfLines={1} style={{ fontFamily: "Lato-Regular", fontSize: normalize(props.textSize), color: Colors.navyBlue, width: "100%", paddingRight: normalize(props.textPadding), alignSelf: "center", position: "relative", textAlign: props.textAlign }}>{text}</Text>
+                    <Text numberOfLines={1} style={{ fontFamily: "Roboto-Regular", fontSize: normalize(props.textSize), color: Colors.navyBlue, width: "100%", paddingRight: normalize(props.textPadding), alignSelf: "center", position: "relative", textAlign: props.textAlign }}>{text}</Text>
                 </TouchableOpacity> :
                 <Picker
                     enabled={props.editable}

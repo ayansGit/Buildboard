@@ -13,6 +13,9 @@ import TrackingList from "../components/screens/TrackingList"
 import TrackOrder from "../components/screens/TrackOrder"
 import OrderSummary from "../components/screens/OrderSummary"
 import AboutUs from "../components/screens/AboutUs"
+import ProductDescription from "../components/screens/ProductDescription"
+import FAQ from "../components/screens/FAQ"
+import GstForm from "../components/screens/GstForm"
 
 const Stack = createStackNavigator();
 
@@ -22,6 +25,7 @@ export default function SignedInNavigator() {
         <Stack.Screen name="DrawerNavigator" component={DrawerNavigator} />
         <Stack.Screen name="ProductList" component = {ProductList}/>
         <Stack.Screen name="ProductDetail" component = {ProductDetail}/>
+        <Stack.Screen name="ProductDescription" component = {ProductDescription}/>
         <Stack.Screen name="CategoryList" component = {CategoryList}/>
         <Stack.Screen name="ContactUs" component = {ContactUs}/>
         <Stack.Screen name="Cart" component = {Cart}/>
@@ -32,6 +36,8 @@ export default function SignedInNavigator() {
         <Stack.Screen name="TrackOrder" component = {TrackOrder}/>
         <Stack.Screen name="OrderSummary" component = {OrderSummary}/>
         <Stack.Screen name="AboutUs" component = {AboutUs}/>
+        <Stack.Screen name="FAQ" component = {FAQ}/>
+        <Stack.Screen name="GstForm" component = {GstForm}/>
       </Stack.Navigator>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { View, Image, TouchableOpacity, Text } from "react-native"
+import { View, Image, TouchableOpacity, Text, Platform } from "react-native"
 import Color from "../../assets/Color"
 import normalize from "../../utils/dimen"
 import ImagePath from "../../assets/ImagePath"
@@ -60,11 +60,13 @@ function Header(props) {
                                     source={ImagePath.shoppingCart}
                                     resizeMode="contain" />
                                 {props.product.quantity > 0 ?
-                                    <Text style={{
+                                    <Text 
+                                    style={{
                                         fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
                                         backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
-                                        paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
-                                        position: "absolute", top: normalize(2), right: 0
+                                        paddingRight: normalize(6), paddingTop: Platform.OS=="ios"? normalize(4): normalize(2), 
+                                        paddingBottom: Platform.OS=="ios"? normalize(4): normalize(2),
+                                        position: "absolute", top: normalize(2), right: 0, overflow:"hidden"
                                     }}>{props.product.quantity}</Text> : null}
                             </TouchableOpacity>
                         </View>
@@ -109,8 +111,9 @@ function Header(props) {
                                     <Text style={{
                                         fontFamily: "Roboto-Medium", fontSize: normalize(10), color: Color.white,
                                         backgroundColor: Color.red, borderRadius: normalize(10), paddingLeft: normalize(6),
-                                        paddingRight: normalize(6), paddingTop: normalize(2), paddingBottom: normalize(2),
-                                        position: "absolute", top: normalize(2), right: 0
+                                        paddingRight: normalize(6), paddingTop: Platform.OS=="ios"? normalize(4): normalize(2), 
+                                        paddingBottom: Platform.OS=="ios"? normalize(4): normalize(2),
+                                        position: "absolute", top: normalize(2), right: 0, overflow:"hidden"
                                     }}>{props.product.quantity}</Text> : null}
 
                             </TouchableOpacity> : null}

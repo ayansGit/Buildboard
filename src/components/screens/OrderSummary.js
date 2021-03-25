@@ -22,17 +22,19 @@ import ImagePath from '../../assets/ImagePath';
 import { getRequest, postRequest } from "../../utils/apiRequest"
 import { addToCartRequest } from "../../actions/ProductAction";
 import { Checkbox, FAB } from 'react-native-paper';
-import { getUserId, getToken, getAddress, getUserName, getPhone } from "../../utils/storage";
+import { getUserId, getToken, getAddress, getUserName, getPhone, getCompany, getGST, } from "../../utils/storage";
 
 export default function OrderSummary(props) {
 
     const cart = useSelector(state => state.product.cart)
     const dispatch = useDispatch()
-    const [isCod, setCod] = useState(false)
+    const [isCod, setCod] = useState(true)
     const [loading, setLoading] = useState(false)
+    const [couponCheking, setCouponCheking] = useState("")
     const [address, setAddress] = useState("")
     const [name, setName] = useState("")
     const [phone, setPhone] = useState("")
+    const [couponCode, setCouponCode] = useState("")
 
     useEffect(() => {
         // getOrderList()
@@ -64,6 +66,15 @@ export default function OrderSummary(props) {
         console.log("PLACE_ORDER: ", props.route.params.cartList)
         let cartList = props.route.params.cartList
 
+        let gstNumber = await getGST()
+        let company = await getCompany()
+        let gst_number = null
+        let company_name = null
+        if (gstNumber != null && gstNumber != undefined && gstNumber.length > 0) {
+            gst_number = gstNumber
+            company_name = company
+        }
+
         let orderRequest = {
             order: []
         }
@@ -78,7 +89,9 @@ export default function OrderSummary(props) {
                 address_id: address,
                 phone: phone,
                 payment_type: "cod",
-                transaction_id: null
+                transaction_id: null,
+                gst_number: gst_number,
+                company_name: company_name
             })
         }
 
@@ -148,7 +161,7 @@ export default function OrderSummary(props) {
     function getProductPrice() {
         let price = 0;
         for (let i = 0; i < cart.length; i++) {
-            price = (price + cart[i].price)* cart[i].quantity
+            price = (price + cart[i].price) * cart[i].quantity
         }
         return price
     }
@@ -205,7 +218,7 @@ export default function OrderSummary(props) {
 
 
                             <TouchableOpacity
-                                onPress={() => props.navigation.navigate("AddressList", {isAccount: false})}
+                                onPress={() => props.navigation.navigate("AddressList", { isAccount: false })}
                                 style={{
                                     backgroundColor: Color.blue, borderRadius: normalize(5),
                                     elevation: normalize(8),
@@ -218,6 +231,45 @@ export default function OrderSummary(props) {
                                     marginLeft: normalize(20), marginRight: normalize(20)
                                 }}>{address.length > 0 ? "CHANGE" : "ADD"}</Text>
                             </TouchableOpacity>
+                        </View>
+
+
+                        <View style={{
+                            width: "90%", alignSelf: "center", backgroundColor: Color.white, padding: normalize(15),
+                            borderRadius: normalize(10), elevation: normalize(8), shadowColor: Color.black,
+                            shadowOpacity: 0.3, shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
+                            alignItems: "flex-start", marginTop: normalize(10)
+                        }}>
+                            <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
+
+                                <TextInput style={{
+                                    width: "100%", borderBottomWidth: normalize(1),
+                                    borderBottomColor: Color.veryLightGrey, fontFamily: "Roboto-Regular",
+                                    fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
+                                    paddingBottom: Platform.OS == "ios" ? normalize(5) : 0
+                                }}
+                                    value={couponCode}
+                                    onChangeText={(text) => setCouponCode(text)}
+                                    placeholder={"Coupon code"}
+                                    placeholderTextColor={Color.grey}
+                                    selectionColor={Color.blue}
+                                    numberOfLines={1} />
+
+                                <TouchableOpacity
+                                    style={{
+                                        borderRadius: normalize(5), padding: normalize(4),
+                                        paddingLeft: normalize(10), paddingRight: normalize(10),
+                                        backgroundColor: Color.blue, right: 0, position: "absolute"
+                                    }}>
+                                    {couponCheking ? <ActivityIndicator size="small" color={Color.white} /> :
+                                        <Text style={{
+                                            color: Color.white,
+                                            fontFamily: "Roboto-Medium",
+                                            fontSize: normalize(12)
+                                        }}>Add</Text>}
+
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         <View style={{
@@ -257,7 +309,7 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(12), color: Color.darkGrey,
                                     fontFamily: "Roboto-Regular", marginLeft: normalize(10)
-                                }}>Shipping: </Text>
+                                }}>Coupon discount: </Text>
 
                                 <Text style={{
                                     fontSize: normalize(14), color: Color.navyBlue,
@@ -277,18 +329,76 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(16), color: Color.navyBlue,
                                     fontFamily: "Roboto-Medium", marginLeft: normalize(10)
-                                }}>{`₹${getProductPrice() + 500}`}</Text>
+                                }}>{`₹${getProductPrice() - 500}`}</Text>
                             </View>
                         </View>
 
-                        <View style={{ flexDirection: "row", marginLeft: 20, marginBottom: normalize(90), alignItems: "center" }}>
-                            <Checkbox
-                                disabled={loading}
-                                status={isCod ? 'checked' : 'unchecked'}
+                        <TouchableOpacity
+                            onPress={() => props.navigation.navigate("GstForm")}
+                            style={{
+                                width: "90%", alignSelf: "center", backgroundColor: Color.white, padding: normalize(15),
+                                borderRadius: normalize(10), elevation: normalize(8), shadowColor: Color.black,
+                                shadowOpacity: 0.3, shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
+                                alignItems: "center", marginTop: normalize(10)
+                            }}>
+                            <Text style={{ fontFamily: "Roboto-Regular", fontSize: normalize(12) }}>Use <Text style={{ fontFamily: "Roboto-Bold" }}>GSTIN</Text> for bussiness purchase(Optional)</Text>
+                        </TouchableOpacity>
+
+                        <View style={{
+                            width: "90%", alignSelf: "center", backgroundColor: Color.white, padding: normalize(15),
+                            borderRadius: normalize(10), elevation: normalize(8), shadowColor: Color.black,
+                            shadowOpacity: 0.3, shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
+                            marginTop: normalize(10), marginBottom: normalize(90)
+                        }}>
+
+                            <Text style={{ fontSize: normalize(15), fontFamily: "Roboto-Medium", color: Color.darkGrey }}>Select Payment Option</Text>
+
+                            <TouchableOpacity
                                 onPress={() => {
-                                    setCod(!isCod);
-                                }} />
-                            <Text style={{ fontSize: 16, fontFamily: "Roboto-Medium", color: Color.darkGrey }}>Pay with Cash on Delivery</Text>
+                                    setCod(true);
+                                }}
+                                style={{ width: "100%", flexDirection: "row", alignItems: "center", marginTop: normalize(10) }}>
+                                {Platform.OS == "android" ?
+                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                        <Checkbox
+                                            disabled={loading}
+                                            status={isCod ? 'checked' : 'unchecked'}
+                                        />
+                                        <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Regular", color: Color.darkGrey }}>Pay with Cash on Delivery</Text>
+                                    </View> :
+                                    <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                                        <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Regular", color: Color.darkGrey }}>Pay with Cash on Delivery</Text>
+                                        <Checkbox
+                                            disabled={loading}
+                                            status={isCod ? 'checked' : 'unchecked'}
+                                        />
+                                    </View>}
+
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setCod(false);
+                                }}
+                                style={{ width: "100%", flexDirection: "row", alignItems: "center", marginTop: normalize(2) }}>
+                                {Platform.OS == "android" ?
+                                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                        <Checkbox
+                                            disabled={loading}
+                                            status={!isCod ? 'checked' : 'unchecked'}
+                                        />
+                                        <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Regular", color: Color.darkGrey }}>Pay with Card or UPI</Text>
+                                    </View> :
+                                    <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                                        <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Regular", color: Color.darkGrey }}>Pay with Card or UPI</Text>
+                                        <Checkbox
+                                            disabled={loading}
+                                            status={!isCod ? 'checked' : 'unchecked'}
+                                        />
+                                    </View>}
+
+                            </TouchableOpacity>
+
                         </View>
 
 
@@ -302,7 +412,7 @@ export default function OrderSummary(props) {
                         <Text style={{
                             fontSize: normalize(18), color: Color.navyBlue, width: "35%",
                             fontFamily: "Roboto-Medium", marginLeft: normalize(10)
-                        }}>{`₹${getProductPrice() + 500}`}</Text>
+                        }}>{`₹${getProductPrice() - 500}`}</Text>
 
 
                         <TouchableOpacity
@@ -330,6 +440,6 @@ export default function OrderSummary(props) {
 
                 </View>
             </SafeAreaView>
-        </View>
+        </View >
     )
 }

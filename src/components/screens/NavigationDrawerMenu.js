@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from "react-redux"
-import { View, TouchableOpacity, Text, Image, SafeAreaView, Linking } from "react-native"
+import { View, TouchableOpacity, Text, Image, SafeAreaView, ActivityIndicator, Linking, Alert, ScrollView } from "react-native"
 import normalize from "../../utils/dimen"
 import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
-import { getUserName, getEmail, getToken } from "../../utils/storage";
-import { setEnabled } from 'react-native/Libraries/Performance/Systrace';
+import { getUserName, getEmail, getToken, setAddress, setToken, setUserId, clearAppData } from "../../utils/storage";
+import { getRequest, postRequest } from "../../utils/apiRequest"
 
 export default function NavigationDrawerMenu(props) {
 
@@ -34,6 +34,43 @@ export default function NavigationDrawerMenu(props) {
         }
     }
 
+    async function logout() {
+        setLoading(true)
+        let token = await getToken()
+        let header = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        }
+        try {
+            let response = await postRequest("user/logout", null, header)
+        } catch (error) {
+            console.log(error.message)
+        }
+        // setToken("")
+        // setAddress("")
+        // setUserId("")
+        await clearAppData()
+        props.navigation.replace("SignedOutNavigator")
+        ToastAndroid.show("You are logged out", ToastAndroid.SHORT);
+        setLoading(false)
+
+    }
+
+    function showLogoutAlert() {
+        Alert.alert(
+            "Alert",
+            "Are you sure you want to logout",
+            [
+                {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel"
+                },
+                { text: "OK", onPress: () => logout() }
+            ],
+            { cancelable: false }
+        );
+    }
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -41,7 +78,7 @@ export default function NavigationDrawerMenu(props) {
             <View style={{ flex: 1, alignItems: "center" }}>
 
                 <Image
-                    style={{ width: normalize(160), height: normalize(140) }}
+                    style={{ width: normalize(160), height: normalize(120) }}
                     source={ImagePath.chooseIcon}
                     resizeMode="contain" />
 
@@ -59,51 +96,126 @@ export default function NavigationDrawerMenu(props) {
 
 
 
-                <TouchableOpacity
-                    onPress={() => { props.navigation.navigate("Home") }}
-                    style={{ width: "100%", alignItems: "center", marginTop: normalize(5), borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
-                    <Text style={{
-                        color: Color.darkGrey, fontSize: normalize(12),
-                        fontFamily: "Roboto-Medium", padding: normalize(15)
-                    }}>HOME</Text>
-                </TouchableOpacity>
+                <ScrollView showsVerticalScrollIndicator={false} style={{ width: "100%" }}>
+                    <TouchableOpacity
+                        disabled={loading}
+                        onPress={() => { props.navigation.navigate("Home") }}
+                        style={{ width: "100%", alignItems: "center", marginTop: normalize(5), borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>HOME</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={() => { props.navigation.navigate("Design With Us") }}
-                    style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
-                    <Text style={{
-                        color: Color.darkGrey, fontSize: normalize(12),
-                        fontFamily: "Roboto-Medium", padding: normalize(15)
-                    }}>DESIGN WITH US</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        disabled={loading}
+                        onPress={() => { props.navigation.navigate("Design With Us") }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>DESIGN WITH US</Text>
+                    </TouchableOpacity>
 
-                {isSignIn ? <TouchableOpacity
-                    onPress={() => { props.navigation.navigate("My Orders") }}
-                    style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
-                    <Text style={{
-                        color: Color.darkGrey, fontSize: normalize(12),
-                        fontFamily: "Roboto-Medium", padding: normalize(15)
-                    }}>MY ORDERS</Text>
-                </TouchableOpacity> : null}
+                    <TouchableOpacity
+                        disabled={loading}
+                        onPress={() => { props.navigation.navigate("Design With Us") }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>WANT TO BE A SELLER</Text>
+                    </TouchableOpacity>
+
+                    {isSignIn ? <TouchableOpacity
+                        disabled={loading}
+                        onPress={() => { props.navigation.navigate("My Orders") }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>MY ORDERS</Text>
+                    </TouchableOpacity> : null}
 
 
-                <TouchableOpacity
-                    onPress={() => { props.navigation.navigate("Settings") }}
-                    style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
-                    <Text style={{
-                        color: Color.darkGrey, fontSize: normalize(12),
-                        fontFamily: "Roboto-Medium", padding: normalize(15)
-                    }}>SETTINGS</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity
+                        disabled={loading}
+                        onPress={() => { props.navigation.navigate("Settings") }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>SETTINGS</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={async () => { await Linking.openURL("http://buildboardfurnishers.com/about-us"); }}
-                    style={{ width: "100%", alignItems: "center", }}>
+                    <TouchableOpacity
+                        disabled={loading}
+                        onPress={async () => { await Linking.openURL("http://buildboardfurnishers.com/about-us"); }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: isSignIn ? Color.darkGrey : Color.white }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>ABOUT US</Text>
+                    </TouchableOpacity>
+
+                    {isSignIn ?
+                        <TouchableOpacity
+                            disabled={loading}
+                            onPress={() => { showLogoutAlert() }}
+                            style={{ width: "100%", alignItems: "center", }}>
+                            {
+                                loading ? <ActivityIndicator style={{ marginTop: normalize(10) }} size="small" color={Color.navyBlue} /> :
+                                    <Text style={{
+                                        color: Color.darkGrey, fontSize: normalize(12),
+                                        fontFamily: "Roboto-Medium", padding: normalize(15)
+                                    }}>LOGOUT</Text>
+                            }
+
+                        </TouchableOpacity> : null}
+
                     <Text style={{
-                        color: Color.darkGrey, fontSize: normalize(12),
-                        fontFamily: "Roboto-Medium", padding: normalize(15)
-                    }}>ABOUT US</Text>
-                </TouchableOpacity>
+                        fontFamily: "Roboto-Medium",
+                        fontSize: normalize(12), color: Color.grey, textAlign: "center", 
+                        marginTop: normalize(40),
+                    }}>
+                        You can follow us on
+                            </Text>
+
+                    <View style={{
+                        flexDirection: "row", alignSelf: "center", marginTop: normalize(15),
+                        alignItems: "center", marginBottom: normalize(20)
+                    }}>
+                        <TouchableOpacity
+                            onPress={() => { Linking.openURL("https://www.facebook.com/buildboardfurnishers/") }}>
+                            <Image
+                                style={{ height: normalize(40), width: normalize(40) }}
+                                source={ImagePath.fbIcon}
+                                resizeMode="cover"
+                            />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => { Linking.openURL("https://www.instagram.com/buildboardfurnishers/?igshid=hi8trw08gw3r") }}
+                            style={{ marginLeft: normalize(15), marginRight: normalize(15) }}>
+                            <Image
+                                style={{
+                                    height: normalize(33), width: normalize(33),
+                                }}
+                                source={ImagePath.instaIcon}
+                                resizeMode="cover" />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => Linking.openURL("https://www.linkedin.com/m/company/buildboard-furnishers/")}>
+                            <Image
+                                style={{ height: normalize(30), width: normalize(30), }}
+                                source={ImagePath.linkedIdIcon}
+                                resizeMode="cover" />
+                        </TouchableOpacity>
+
+                    </View>
+                </ScrollView>
+
             </View>
         </SafeAreaView>
     )

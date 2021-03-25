@@ -11,7 +11,7 @@ import {
     TouchableOpacity, ImageBackground,
     Image, ActivityIndicator,
     TextInput,
-    Platform,
+    Platform, KeyboardAvoidingView,
     ToastAndroid,
 } from 'react-native';
 import Header from "../common/Header"
@@ -137,7 +137,9 @@ export default function Address(props) {
                             props.navigation.goBack()
                         }} />
 
-                    <View style={{ width: "100%", alignItems: "center" }}>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        style={{ flex: 1, width: "100%", alignItems: "center" }}>
                         <ScrollView style={{ width: "100%" }}>
                             <View style={{ width: "100%", alignItems: "center" }}>
                                 <View style={{
@@ -381,7 +383,7 @@ export default function Address(props) {
                             </View>
                         </ScrollView>
 
-                    </View>
+                    </KeyboardAvoidingView>
 
                 </View>
             </SafeAreaView>

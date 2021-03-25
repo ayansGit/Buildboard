@@ -5,16 +5,23 @@ import Settings from "../components/screens/Settings"
 import DesignWithUs from "../components/screens/DesignWithUs"
 import Order from "../components/screens/Order"
 import NavigationDrawerMenu from "../components/screens/NavigationDrawerMenu"
+import { Dimensions } from 'react-native';
 
 const Drawer = createDrawerNavigator();
 
-export default function DrawerNavigator(){
+const isLargeScreen = Dimensions.get("window").width >= 768;
+
+export default function DrawerNavigator() {
     return (
-        <Drawer.Navigator initialRouteName="Home" drawerContent = {(props) => <NavigationDrawerMenu {...props}/>}>
-            <Drawer.Screen name="Home" component = {Home} />
-            <Drawer.Screen name="Design With Us" component = {DesignWithUs} />
-            <Drawer.Screen name="Settings" component = {Settings} />
-            <Drawer.Screen name="My Orders" component = {Order}/>
+        <Drawer.Navigator
+            initialRouteName="Home"
+            drawerContent={(props) => <NavigationDrawerMenu {...props}
+            />}
+            drawerStyle={isLargeScreen ? { width: '60%' } : null}>
+            <Drawer.Screen name="Home" component={Home} />
+            <Drawer.Screen name="Design With Us" component={DesignWithUs} />
+            <Drawer.Screen name="Settings" component={Settings} />
+            <Drawer.Screen name="My Orders" component={Order} />
         </Drawer.Navigator>
     )
 }

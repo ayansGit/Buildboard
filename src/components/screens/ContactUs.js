@@ -7,7 +7,7 @@ import {
     Text, TextInput,
     StatusBar,
     FlatList,
-    TouchableOpacity,
+    TouchableOpacity, ActivityIndicator,
     Image, ImageBackground,
     Platform
 } from 'react-native';
@@ -15,24 +15,59 @@ import Header from "../common/Header"
 import normalize from "../../utils/dimen"
 import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
-import { getRequest } from "../../utils/apiRequest"
+import { getRequest, postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
 import { Value } from 'react-native-reanimated';
-
+import { showAlert } from "../../utils/Utils"
 
 
 
 export default function ContactUs(props) {
 
+    const [loading, setLoading] = useState(false)
     const [contactRequest, setContactRequest] = useState({
-        firstname: "",
-        lastname: "",
+        first_name: "",
+        last_name: "",
         email: "",
         description: ""
     })
 
+    async function contactUsRequest() {
+        setLoading(true)
+        if (contactRequest.first_name.length == 0) {
+            showAlert("Enter your first name")
+        } else if (contactRequest.last_name.length == 0) {
+            showAlert("Enter your last name")
+        } else if (contactRequest.email.length == 0) {
+            showAlert("Enter your email")
+        } else if (contactRequest.description.length == 0) {
+            showAlert("Enter your details")
+        } else {
+            try {
+                let response = await postRequest("user/contact-us", contactRequest)
+                console.log("RESPONSE", response)
+                if (response.success) {
+                    showAlert(response.message)
+                    props.navigation.goBack()
+                } else if (Array.isArray(response.message)) {
+                    var message = ""
+                    response.message.map((value) => { message = message + "\n" + value })
+                    console.log("MSG", message)
+                    alert(message)
+                } else {
+                    alert(response.message)
+                }
+            } catch (error) {
+                alert(error)
+            }
+
+        }
+
+        setLoading(false)
+
+    }
 
 
     return (
@@ -81,6 +116,13 @@ export default function ContactUs(props) {
                                     fontSize: normalize(8), color: Color.blue
                                 }}>First Name</Text>
                                 <TextInput
+                                    value={contactRequest.first_name}
+                                    onChangeText={(text) => {
+                                        setContactRequest({
+                                            ...contactRequest,
+                                            first_name: text
+                                        })
+                                    }}
                                     numberOfLines={1}
                                     style={{
                                         width: "100%", borderBottomWidth: normalize(1),
@@ -96,6 +138,13 @@ export default function ContactUs(props) {
                                     marginTop: normalize(10)
                                 }}>Last Name</Text>
                                 <TextInput
+                                    value={contactRequest.last_name}
+                                    onChangeText={(text) => {
+                                        setContactRequest({
+                                            ...contactRequest,
+                                            last_name: text
+                                        })
+                                    }}
                                     numberOfLines={1}
                                     style={{
                                         width: "100%", borderBottomWidth: normalize(1),
@@ -111,6 +160,14 @@ export default function ContactUs(props) {
                                     marginTop: normalize(10)
                                 }}>Email</Text>
                                 <TextInput
+                                    style={{ marginTop: Platform.OS == "android" ? 0.5 : normalize(5) }}
+                                    value={contactRequest.email}
+                                    onChangeText={(text) => {
+                                        setContactRequest({
+                                            ...contactRequest,
+                                            email: text
+                                        })
+                                    }}
                                     numberOfLines={1}
                                     style={{
                                         width: "100%", borderBottomWidth: normalize(1),
@@ -126,6 +183,11 @@ export default function ContactUs(props) {
                                     marginTop: normalize(10)
                                 }}>Message</Text>
                                 <TextInput
+                                    value={contactRequest.description}
+                                    onChangeText={(text) => setContactRequest({
+                                        ...contactRequest,
+                                        description: text
+                                    })}
                                     numberOfLines={1}
                                     style={{
                                         width: "100%", borderBottomWidth: normalize(1),
@@ -136,21 +198,24 @@ export default function ContactUs(props) {
                                     selectionColor={Color.blue} />
 
                                 <TouchableOpacity
+                                    onPress={() => contactUsRequest()}
                                     style={{ width: "100%", height: normalize(40), marginTop: normalize(20), marginBottom: normalize(20) }}>
                                     <ImageBackground
                                         style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
                                         source={ImagePath.gradientButton}
                                         resizeMode="stretch">
-                                        <Text
-                                            style={{
-                                                fontSize: normalize(14),
-                                                fontFamily: "Roboto-Medium",
-                                                color: Color.white
-                                            }}>SUBMIT</Text>
+                                        {loading ? <ActivityIndicator size="small" color={Color.white} /> :
+                                            <Text
+                                                style={{
+                                                    fontSize: normalize(14),
+                                                    fontFamily: "Roboto-Medium",
+                                                    color: Color.white
+                                                }}>SUBMIT</Text>}
+
                                     </ImageBackground>
                                 </TouchableOpacity>
 
-                                <Text style={{
+                                {/* <Text style={{
                                     fontFamily: "Roboto-Medium",
                                     fontSize: normalize(12), color: Color.grey, textAlign: "center", marginTop: normalize(30)
                                 }}>You can follow us on</Text>
@@ -187,7 +252,7 @@ export default function ContactUs(props) {
                                             resizeMode="cover" />
                                     </TouchableOpacity>
 
-                                </View>
+                                </View> */}
                             </ScrollView>
 
                         </View>

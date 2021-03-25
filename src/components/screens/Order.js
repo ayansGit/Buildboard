@@ -35,7 +35,7 @@ function Order(props) {
             // The screen is focused
             // Call any action
             getOrderList()
-          });
+        });
         return unsubscribe
     }, [props.navigation])
 
@@ -48,7 +48,7 @@ function Order(props) {
                 "Authorization": "Bearer " + token
             }
             let response = await getRequest("user/order/list", header)
-            if(response.success){
+            if (response.success) {
                 console.log("RES", response.data)
                 setOrderList(response.data)
             }
@@ -87,9 +87,9 @@ function Order(props) {
                                 return (
                                     <View style={{
                                         width: "100%", alignItems: "center", paddingBottom: normalize(10),
-                                        borderBottomWidth: normalize(1), 
-                                        borderBottomColor: data.index == orderList.length-1 ? Color.white: Color.veryLightGrey, 
-                                        marginTop: normalize(10), marginBottom: data.index == orderList.length-1 ? normalize(60): normalize(1)
+                                        borderBottomWidth: normalize(1),
+                                        borderBottomColor: data.index == orderList.length - 1 ? Color.white : Color.veryLightGrey,
+                                        marginTop: normalize(10), marginBottom: data.index == orderList.length - 1 ? normalize(60) : normalize(1)
                                     }}>
                                         <View style={{
                                             width: "100%", marginTop: normalize(2), paddingStart: "5%", paddingEnd: "2%", paddingBottom: "5%", flexDirection: "row",
@@ -101,7 +101,7 @@ function Order(props) {
                                                     borderColor: Color.grey, backgroundColor: Color.white, padding: normalize(3),
                                                 }}
                                                 resizeMode="contain"
-                                                source={{uri: data.item.product_image}} />
+                                                source={{ uri: data.item.product_image }} />
                                             <View style={{ width: "55%", marginLeft: normalize(15) }}>
                                                 <Text style={{
                                                     width: "100%", fontFamily: "Roboto-Medium", fontSize: normalize(12),
@@ -149,6 +149,20 @@ function Order(props) {
                                             width: "90%", fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                             color: Color.darkGrey, marginTop: normalize(2)
                                         }}>{data.item.status}</Text>
+
+                                        <TouchableOpacity style={{
+                                            backgroundColor: Color.blue, borderRadius: normalize(5),
+                                            elevation: normalize(8), alignSelf: "center",
+                                            shadowColor: Color.black, shadowOpacity: 0.3, shadowOffset: { height: 0, width: 0 },
+                                            shadowRadius: normalize(5),
+                                        }}
+                                            onPress={() => props.navigation.navigate("TrackOrder")}>
+                                            <Text style={{
+                                                fontSize: normalize(10), fontFamily: "Roboto-Regular",
+                                                color: Color.white, marginTop: normalize(6), marginBottom: normalize(6),
+                                                marginLeft: normalize(20), marginRight: normalize(20)
+                                            }}>CANCEL ORDER</Text>
+                                        </TouchableOpacity>
                                     </View>
                                 )
                             }}

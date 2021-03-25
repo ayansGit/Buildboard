@@ -31,6 +31,7 @@ export default function AddressList(props) {
     const [addressList, setAddressList] = useState([])
     const states = useSelector(state => state.user.stateList)
     const [loading, setLoading] = useState(true)
+    const [position, setPosition] = useState(-1)
     let isEditable = props.route.params.isAccount
 
     useEffect(() => {
@@ -55,10 +56,10 @@ export default function AddressList(props) {
             console.log("RESPONSE", response)
             if (response.success) {
                 setAddressList(response.data)
-                if (response.data.length > 0) {
-                    let address = `${response.data[0].house_number} ${response.data[0].area}, ${response.data[0].landmark}, ${response.data[0].city} ${response.data[0].pincode}, ${getStateName(response.data[0].state_id)}`
-                    setAddress(address)
-                }
+                // if (response.data.length > 0) {
+                //     let address = `${response.data[0].house_number} ${response.data[0].area}, ${response.data[0].landmark}, ${response.data[0].city} ${response.data[0].pincode}, ${getStateName(response.data[0].state_id)}`
+                //     setAddress(address)
+                // }
             }
 
         } catch (error) {
@@ -107,11 +108,11 @@ export default function AddressList(props) {
                             <RadioButton.Group
                                 onValueChange={newValue => {
                                     console.log("VALUE", newValue)
-                                    setValue(newValue)
+                                    setPosition(newValue)
                                     let address = `${addressList[newValue].house_number} ${addressList[newValue].area}, ${addressList[newValue].landmark}, ${addressList[newValue].city} ${addressList[newValue].pincode}, ${getStateName(addressList[newValue].state_id)}`
                                     setAddress(address)
                                 }}
-                                value={value}>
+                                value={position}>
                                 <FlatList
                                     showsVerticalScrollIndicator={false}
                                     style={{ width: "100%" }}
@@ -140,13 +141,14 @@ export default function AddressList(props) {
                                                     }}>{`${data.item.house_number} ${data.item.area}, ${data.item.landmark}, ${data.item.city} ${data.item.pincode}, ${getStateName(data.item.state_id)}`}</Text>
                                                 </View>
 
-                                                <TouchableOpacity
-                                                    onPress={() => props.navigation.navigate("Address")}>
+                                                {isEditable ? <TouchableOpacity
+                                                    onPress={() => { }}>
                                                     <Image
                                                         style={{ height: normalize(12), width: normalize(12), margin: normalize(5) }}
                                                         source={ImagePath.delete}
                                                         resizeMode="contain" />
-                                                </TouchableOpacity>
+                                                </TouchableOpacity> : null}
+
                                             </TouchableOpacity>
                                         )
                                     }} />

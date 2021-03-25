@@ -6,7 +6,18 @@ export const type = {
     userName: "buildboard.userName",
     email: "buildboard.email",
     address: "buildboard.address",
-    phone: "buildboard.phone"
+    phone: "buildboard.phone",
+    company: "buildboard.company",
+    gstNumber:  "buildboard.gstNumber"
+}
+
+export async function clearAppData() {
+    try {
+        const keys = await AsyncStorage.getAllKeys();
+        await AsyncStorage.multiRemove(keys);
+    } catch (error) {
+        console.error('Error clearing app data.');
+    }
 }
 
 export async function setToken(token) {
@@ -137,6 +148,51 @@ export async function getPhone() {
     try {
         value = await AsyncStorage.getItem(
             type.phone)
+    } catch (error) {
+        // Error saving data
+    }
+    return value;
+}
+
+
+export async function setGST(value) {
+    try {
+        await AsyncStorage.setItem(
+            type.gstNumber,
+            value
+        );
+    } catch (error) {
+        // Error saving data
+    }
+}
+
+export async function getGST() {
+    let value = ""
+    try {
+        value = await AsyncStorage.getItem(
+            type.gstNumber)
+    } catch (error) {
+        // Error saving data
+    }
+    return value;
+}
+
+export async function setCompany(value) {
+    try {
+        await AsyncStorage.setItem(
+            type.company,
+            value
+        );
+    } catch (error) {
+        // Error saving data
+    }
+}
+
+export async function getCompany() {
+    let value = ""
+    try {
+        value = await AsyncStorage.getItem(
+            type.company)
     } catch (error) {
         // Error saving data
     }

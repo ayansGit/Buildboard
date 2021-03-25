@@ -30,5 +30,10 @@ const ImagePath = {
     close: require('./images/close.png'),
     tracking: require('./images/tracking.png'),
     track2: require('./images/track2.png'),
+    rack2: require('./images/track2.png'),
+    up_arrow: require('./images/up-arrow.png'),
+    down_arrow: require('./images/down-arrow.png'),
+    heart: require('./images/heart.png'),
+    heart_outline: require('./images/heart_outline.png'),
 };
 export default ImagePath;

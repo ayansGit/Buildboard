@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from "react-redux"
 import {
     SafeAreaView,
@@ -13,7 +13,7 @@ import {
     Image,
     Platform, ActivityIndicator,
     ImageBackground,
-    ToastAndroid, Alert
+    ToastAndroid, Alert, useWindowDimensions
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
@@ -26,14 +26,27 @@ import ViewPager from '@react-native-community/viewpager';
 import { ADD_TO_CART_REQUEST } from "../../actions/types"
 import { addToCartRequest } from "../../actions/ProductAction";
 import { getToken } from "../../utils/storage";
+import HTML from "react-native-render-html";
+import { showAlert } from "../../utils/Utils"
 
 
 
 export default function ProductDetail(props) {
 
+    const regex = /(<([^>]+)>)/ig;
+    const contentWidth = useWindowDimensions().width;
+
+    const scrollViewRef = useRef()
+
     const [isSignedIn, setSignedIn] = useState(false)
     const [loading, setLoading] = useState(false)
     const [product, setProduct] = useState(null)
+    const [assemble, setAssemble] = useState(false)
+    const [careInstruction, setCareInstruction] = useState(false)
+    const [feature, setFeature] = useState(false)
+    const [isAddedToWishlist, setAddToWishlist] = useState(false)
+    const [pincode, setPincode] = useState("")
+    const [pincodeCheking, setPincodeCheking] = useState("")
     const dispatch = useDispatch()
     const cart = useSelector(state => state.product.cart)
 
@@ -127,6 +140,28 @@ export default function ProductDetail(props) {
         props.navigation.navigate("OrderSummary", { cartList: cart })
     }
 
+    async function checkPincode() {
+        
+        if (pincode.length > 0) {
+            setPincodeCheking(true)
+            try {
+                let response = await getRequest(`user/pincode/${pincode}/list`)
+                if (response.success) {
+                    showAlert("Product is available on this pincode")
+                } else {
+                    showAlert("Product is not available on this pincode")
+                }
+            } catch (error) {
+                alert(error)
+            }
+            setPincodeCheking(false)
+        }else{
+            showAlert("Insert a pincode to check")
+        }
+        
+
+    }
+
     function showLogintAlert() {
         Alert.alert(
             "Alert",
@@ -161,7 +196,10 @@ export default function ProductDetail(props) {
                         }} />
                     <View style={{ flex: 1, width: "100%", alignItems: "center" }}>
 
-                        <ScrollView style={{ width: "100%" }}>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            ref={scrollViewRef}
+                            style={{ width: "100%" }}>
 
                             <View style={{ width: "100%", alignItems: "center" }}>
 
@@ -209,6 +247,16 @@ export default function ProductDetail(props) {
                                                 borderRadius: normalize(10), backgroundColor: Color.black, margin: normalize(5)
                                             }} />
                                         </View>
+
+                                        <TouchableOpacity
+                                            style={{ position: "absolute", bottom: normalize(9), right: normalize(10) }}
+                                            onPress={() => {
+                                                setAddToWishlist(!isAddedToWishlist)
+                                            }}>
+                                            <Image
+                                                style={{ height: normalize(16), width: normalize(16), margin: normalize(5) }}
+                                                source={isAddedToWishlist ? ImagePath.heart : ImagePath.heart_outline} />
+                                        </TouchableOpacity>
                                     </View> : null}
 
 
@@ -229,16 +277,16 @@ export default function ProductDetail(props) {
                                             color: Color.darkGrey, marginTop: normalize(10)
                                         }}>{`Category: ${product.category.name}`}</Text>
 
-                                        <Text style={{
+                                        {/* <Text style={{
                                             fontFamily: "Roboto-Medium", fontSize: normalize(14),
                                             color: Color.darkGrey, marginTop: normalize(15)
-                                        }}>Description:</Text>
+                                        }}>Feature:</Text>
                                         <Text
                                             numberOfLines={3}
                                             style={{
                                                 fontFamily: "Roboto-Regular", fontSize: normalize(12),
                                                 color: Color.darkGrey, marginTop: normalize(5)
-                                            }}>{product.description ? product.description : "No description available"}</Text>
+                                            }}>{product.description ? product.description.replace(regex, '') : "No description available"}</Text> */}
 
                                         {/* <HtmlText style={{
                                             fontFamily: "Roboto-Regular", fontSize: normalize(12),
@@ -246,7 +294,7 @@ export default function ProductDetail(props) {
                                         }}
                                             html={product.description ? product.description : "No description available"} /> */}
 
-                                        <TouchableOpacity style={{
+                                        {/* <TouchableOpacity style={{
                                             width: normalize(70), flexDirection: "row", flexWrap: "wrap", paddingTop: normalize(2), paddingBottom: normalize(2),
                                             paddingStart: normalize(5), paddingEnd: normalize(5),
                                             elevation: normalize(8), shadowColor: Color.black, shadowOpacity: 0.3,
@@ -254,7 +302,8 @@ export default function ProductDetail(props) {
                                             alignItems: "center", backgroundColor: Color.white, borderRadius: normalize(15),
                                             marginTop: normalize(10), marginBottom: normalize(10)
 
-                                        }}>
+                                        }}
+                                            onPress={() => { props.navigation.navigate("ProductDescription", { desc: product.description }) }}>
                                             <View style={{
                                                 height: normalize(15), width: normalize(15),
                                                 borderRadius: normalize(7), backgroundColor: Color.blue,
@@ -269,7 +318,7 @@ export default function ProductDetail(props) {
                                                 fontSize: normalize(12), fontFamily: "Roboto-Medium",
                                                 color: Color.darkGrey, marginBottom: normalize(1), marginLeft: normalize(3)
                                             }}>Details</Text>
-                                        </TouchableOpacity>
+                                        </TouchableOpacity> */}
 
 
                                         <Text style={{
@@ -278,11 +327,15 @@ export default function ProductDetail(props) {
                                         }}>Check Availibility:</Text>
 
                                         <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
+
                                             <TextInput style={{
                                                 width: "100%", borderBottomWidth: normalize(1),
                                                 borderBottomColor: Color.darkGrey, fontFamily: "Roboto-Regular",
-                                                fontSize: normalize(14), color: Color.darkGrey
+                                                fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
+                                                paddingBottom: Platform.OS == "ios" ? normalize(5) : 0
                                             }}
+                                                value={pincode}
+                                                onChangeText={(text) => setPincode(text)}
                                                 placeholder={"Pincode"}
                                                 placeholderTextColor={Color.grey}
                                                 selectionColor={Color.blue}
@@ -291,18 +344,21 @@ export default function ProductDetail(props) {
                                                 maxLength={9} />
 
                                             <TouchableOpacity
+                                                onPress={() => checkPincode()}
                                                 style={{
                                                     borderRadius: normalize(5), padding: normalize(4),
                                                     paddingLeft: normalize(10), paddingRight: normalize(10),
                                                     backgroundColor: Color.blue, right: 0, position: "absolute"
                                                 }}>
-                                                <Text style={{
-                                                    color: Color.white,
-                                                    fontFamily: "Roboto-Medium",
-                                                    fontSize: normalize(12)
-                                                }}>
-                                                    Check
-                                                </Text>
+                                                {pincodeCheking ? <ActivityIndicator size="small" color={Color.white} /> :
+                                                    <Text style={{
+                                                        color: Color.white,
+                                                        fontFamily: "Roboto-Medium",
+                                                        fontSize: normalize(12)
+                                                    }}>
+                                                        Check
+                                                    </Text>}
+
                                             </TouchableOpacity>
                                         </View>
 
@@ -379,6 +435,107 @@ export default function ProductDetail(props) {
                                                 }}>1 Day</Text>
                                             </View>
                                         </View>
+
+
+
+                                    </View> : null}
+
+                                {product ?
+                                    <View style={{ width: "100%" }}>
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setFeature(!feature)
+                                                if (!feature) {
+                                                    scrollViewRef.current.scrollToEnd({ animated: true })
+                                                }
+                                            }}
+                                            style={{
+                                                width: "100%", flexDirection: "row", justifyContent: "space-between",
+                                                alignItems: "center", borderBottomWidth: normalize(1), borderTopWidth: normalize(1),
+                                                borderBottomColor: Color.darkGrey, borderTopColor: Color.darkGrey, paddingTop: normalize(10),
+                                                paddingBottom: normalize(10), paddingLeft: normalize(10), paddingRight: normalize(10), marginTop: normalize(15)
+                                            }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                color: Color.darkGrey,
+                                            }}>FEATURE</Text>
+
+                                            <Image
+                                                style={{ width: normalize(16), height: normalize(16) }}
+                                                source={feature ? ImagePath.up_arrow : ImagePath.down_arrow} />
+
+                                        </TouchableOpacity>
+
+                                        {feature && product.description ? <ScrollView style={{
+                                            width: "100%", height: normalize(130),
+                                            borderBottomWidth: normalize(1), borderTopColor: Color.darkGrey
+                                        }}>
+                                            <HTML source={{ html: product.description }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} />
+                                        </ScrollView> : null}
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setAssemble(!assemble)
+                                                if (!assemble) {
+                                                    scrollViewRef.current.scrollToEnd({ animated: true })
+                                                }
+                                            }}
+                                            style={{
+                                                width: "100%", flexDirection: "row", justifyContent: "space-between",
+                                                alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey, paddingTop: normalize(10),
+                                                paddingBottom: normalize(10), paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                color: Color.darkGrey,
+                                            }}>ASSEMBLY</Text>
+
+                                            <Image
+                                                style={{ width: normalize(16), height: normalize(16) }}
+                                                source={assemble ? ImagePath.up_arrow : ImagePath.down_arrow} />
+
+                                        </TouchableOpacity>
+
+                                        {assemble ? <ScrollView style={{
+                                            width: "100%", height: normalize(130), borderBottomWidth: normalize(1),
+                                            borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                        }}>
+                                            <Text style={{ fontFamily: "Roboto-Regular", fontSize: normalize(14) }}></Text>
+                                        </ScrollView> : null}
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setCareInstruction(!careInstruction)
+                                                if (!careInstruction) {
+                                                    scrollViewRef.current.scrollToEnd({ animated: true })
+                                                }
+                                            }}
+                                            style={{
+                                                width: "100%", flexDirection: "row", justifyContent: "space-between",
+                                                alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey, paddingTop: normalize(10),
+                                                paddingBottom: normalize(10), paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                color: Color.darkGrey,
+                                            }}>CARE INSTRUCTION</Text>
+
+                                            <Image
+                                                style={{ width: normalize(16), height: normalize(16) }}
+                                                source={careInstruction ? ImagePath.up_arrow : ImagePath.down_arrow} />
+
+                                        </TouchableOpacity>
+
+                                        {careInstruction ? <ScrollView style={{
+                                            width: "100%", height: normalize(130),
+                                            borderBottomWidth: normalize(1),
+                                            borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                        }}>
+                                            <Text style={{ fontFamily: "Roboto-Regular", fontSize: normalize(14) }}></Text>
+                                        </ScrollView> : null}
+
+
                                     </View> : null}
                             </View>
                             <View style={{ height: normalize(20) }}></View>
@@ -414,12 +571,13 @@ export default function ProductDetail(props) {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 disabled={loading}
-                                onPress={() => { 
+                                onPress={() => {
                                     if (isSignedIn) {
                                         buyNow()
                                     } else {
                                         showLogintAlert()
-                                    } }}
+                                    }
+                                }}
                                 style={{ width: "50%", height: normalize(40), }}>
                                 <ImageBackground
                                     style={{

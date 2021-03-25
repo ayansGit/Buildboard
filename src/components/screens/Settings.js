@@ -167,6 +167,23 @@ export default function Settings(props) {
                                 shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
                                 marginBottom: normalize(10),
                                 justifyContent: "center", alignItems: "center"
+                            }}
+                            onPress={() => { props.navigation.navigate("FAQ") }}>
+                            <Text style={{
+                                fontFamily: "Roboto-Medium", fontSize: normalize(12),
+                                color: Color.navyBlue,
+                            }}>FAQ</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            disabled={loading}
+                            style={{
+                                width: "90%", height: normalize(45),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
+                                marginBottom: normalize(10),
+                                justifyContent: "center", alignItems: "center"
                             }}>
                             <Text style={{
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
@@ -174,7 +191,7 @@ export default function Settings(props) {
                             }}>PRIVACY POLICY</Text>
                         </TouchableOpacity>
 
-                        {isSignedIn ?
+                        {/* {isSignedIn ?
                             <TouchableOpacity
                                 disabled={loading}
                                 style={{
@@ -192,7 +209,7 @@ export default function Settings(props) {
                                         color: Color.navyBlue,
                                     }}>LOGOUT</Text>}
 
-                            </TouchableOpacity> : null}
+                            </TouchableOpacity> : null} */}
 
                     </View>
                 </View>

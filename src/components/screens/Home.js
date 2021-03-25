@@ -203,7 +203,7 @@ export default function Home(props) {
                             {bannerList.length > 0 ?
                                 <ViewPager
                                     pageMargin={normalize(10)}
-                                    style={{ width: "100%", height: normalize(130), marginTop: normalize(5) }}>
+                                    style={{ width: "100%", height: normalize(200), marginTop: normalize(5) }}>
                                     {bannerList.map((value, index) => {
                                         return (
                                             <View
@@ -260,13 +260,13 @@ export default function Home(props) {
 
                             <FlatList
                                 horizontal={true}
-                                style={{ width: "100%", }}
+                                style={{ width: "100%", marginBottom: normalize(120) }}
                                 data={newArrivalProducts}
                                 renderItem={(data) => renderNewArrivalItem(data)}
                                 keyExtractor={(item, index) => index.toString()}
                                 showsHorizontalScrollIndicator={false} />
 
-                            <Text style={{
+                            {/* <Text style={{
                                 fontFamily: "Roboto-Medium",
                                 fontSize: normalize(12), color: Color.grey, textAlign: "center", marginTop: normalize(50)
                             }}>
@@ -305,7 +305,7 @@ export default function Home(props) {
                                         resizeMode="cover" />
                                 </TouchableOpacity>
 
-                            </View>
+                            </View> */}
                         </ScrollView>
 
                     </View>
