@@ -29,11 +29,14 @@ const ImagePath = {
     edit: require('./images/edit.png'),
     close: require('./images/close.png'),
     tracking: require('./images/tracking.png'),
+    track1: require('./images/track1.png'),
     track2: require('./images/track2.png'),
+    track3: require('./images/track3.png'),
     rack2: require('./images/track2.png'),
     up_arrow: require('./images/up-arrow.png'),
     down_arrow: require('./images/down-arrow.png'),
     heart: require('./images/heart.png'),
     heart_outline: require('./images/heart_outline.png'),
+    heart_outline_blue: require('./images/heart_outline_blue.png'),
 };
 export default ImagePath;

@@ -23,7 +23,7 @@ import ViewPager from '@react-native-community/viewpager';
 import AddressDialog from "../common/AddressDialog"
 import { RadioButton, FAB } from 'react-native-paper';
 import Icon from "react-native-vector-icons/MaterialIcons"
-import { getToken, setAddress } from "../../utils/storage";
+import { getToken, setAddress, setAddressId, setPincode } from "../../utils/storage";
 
 export default function AddressList(props) {
 
@@ -70,12 +70,9 @@ export default function AddressList(props) {
 
     function getStateName(id) {
         var stateName = ""
-        console.log('STATES', states)
-        console.log('STATES_ID', id)
         for (let i = 0; i < states.length; i++) {
             if (id == states[i].state_id) {
                 stateName = states[i].name
-                console.log('STATES_SEL', id)
                 break
             }
         }
@@ -97,7 +94,12 @@ export default function AddressList(props) {
                         title={"Choose Address"}
                         navigation={props.navigation}
                         containNavDrawer={false}
+                        showCart={isEditable}
+                        showOk={!isEditable && (position != -1)}
                         onBackPressed={() => {
+                            props.navigation.goBack()
+                        }}
+                        onOkPressed={() => {
                             props.navigation.goBack()
                         }} />
 
@@ -111,6 +113,9 @@ export default function AddressList(props) {
                                     setPosition(newValue)
                                     let address = `${addressList[newValue].house_number} ${addressList[newValue].area}, ${addressList[newValue].landmark}, ${addressList[newValue].city} ${addressList[newValue].pincode}, ${getStateName(addressList[newValue].state_id)}`
                                     setAddress(address)
+                                    setAddressId(addressList[newValue].id.toString())
+                                    setPincode(addressList[newValue].pincode)
+
                                 }}
                                 value={position}>
                                 <FlatList
@@ -120,18 +125,29 @@ export default function AddressList(props) {
                                     keyExtractor={(item, index) => index.toString()}
                                     renderItem={(data) => {
                                         return (
+
                                             <TouchableOpacity style={{
                                                 width: "95%", flexDirection: "row", borderRadius: normalize(4),
                                                 padding: normalize(10), paddingEnd: normalize(5), marginTop: normalize(10), backgroundColor: Color.white,
                                                 elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-around",
                                                 shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
-                                                marginBottom: data.index == 7 ? normalize(70) : normalize(10), alignItems: "flex-start", alignSelf: "center"
+                                                marginBottom: data.index == addressList.length-1 ? normalize(120) : normalize(10), alignItems: "flex-start", alignSelf: "center"
                                             }}
                                                 onPress={() => {
                                                     if (isEditable)
-                                                        props.navigation.navigate("Address")
+                                                        props.navigation.navigate("Address", { forUpdate: true, addressDetails: addressList[data.index] })
+                                                    else {
+                                                        let newValue = data.index
+                                                        setPosition(newValue)
+                                                        let address = `${addressList[newValue].house_number} ${addressList[newValue].area}, ${addressList[newValue].landmark}, ${addressList[newValue].city} ${addressList[newValue].pincode}, ${getStateName(addressList[newValue].state_id)}`
+                                                        setAddress(address)
+                                                        setAddressId(addressList[newValue].id.toString())
+                                                        setPincode(addressList[newValue].pincode)
+                                                    }
                                                 }}>
-                                                <RadioButton value={data.index} />
+                                                {Platform.OS == "android" && !isEditable ?
+                                                    <RadioButton value={data.index} /> : null}
+
 
                                                 <View style={{ width: "75%" }}>
                                                     <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(14), color: Color.darkGrey }}>{data.item.full_name}</Text>
@@ -147,9 +163,12 @@ export default function AddressList(props) {
                                                         style={{ height: normalize(12), width: normalize(12), margin: normalize(5) }}
                                                         source={ImagePath.delete}
                                                         resizeMode="contain" />
-                                                </TouchableOpacity> : null}
+                                                </TouchableOpacity> : Platform.OS == "ios" ?
+                                                    <RadioButton value={data.index} /> : null}
 
                                             </TouchableOpacity>
+
+
                                         )
                                     }} />
 
@@ -157,19 +176,18 @@ export default function AddressList(props) {
                         </View>
                     </View>
 
-                    {isEditable ?
-                        <FAB
-                            style={{
-                                position: 'absolute',
-                                margin: 16,
-                                right: 0,
-                                bottom: 0,
+                    <FAB
+                        style={{
+                            position: 'absolute',
+                            margin: 16,
+                            right: 0,
+                            bottom: 0,
 
-                            }}
-                            color={Color.white}
-                            label="Add Address"
-                            onPress={() => props.navigation.navigate("Address")}
-                        /> : null}
+                        }}
+                        color={Color.white}
+                        label="Add Address"
+                        onPress={() => props.navigation.navigate("Address", { forUpdate: false })}
+                    />
 
                 </View>
             </SafeAreaView>

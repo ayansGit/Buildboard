@@ -40,6 +40,7 @@ export default function Settings(props) {
         let token = await getToken()
         if (token != null && token != undefined && token.length > 0) {
             setSignedIn(true)
+            setSignedIn(true)
         } else {
             setSignedIn(false)
         }
@@ -113,6 +114,7 @@ export default function Settings(props) {
                     <Header
                         loading={loading}
                         title={"Settings"}
+                        isSignedIn = {isSignedIn}
                         navigation={props.navigation}
                         onDrawerButtonPressed={() => {
                             props.navigation.openDrawer()
@@ -139,6 +141,28 @@ export default function Settings(props) {
                                 fontFamily: "Roboto-Medium", fontSize: normalize(12),
                                 color: Color.navyBlue,
                             }}>ACCOUNT</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            disabled={loading}
+                            style={{
+                                width: "90%", height: normalize(45),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
+                                marginBottom: normalize(10),
+                                justifyContent: "center", alignItems: "center"
+                            }}
+                            onPress={() => {
+                                if (isSignedIn)
+                                    props.navigation.navigate("AddressList", { isAccount: true })
+                                else showLogintAlert()
+
+                            }}>
+                            <Text style={{
+                                fontFamily: "Roboto-Medium", fontSize: normalize(12),
+                                color: Color.navyBlue,
+                            }}>ADDRESS</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -190,6 +214,8 @@ export default function Settings(props) {
                                 color: Color.navyBlue,
                             }}>PRIVACY POLICY</Text>
                         </TouchableOpacity>
+
+
 
                         {/* {isSignedIn ?
                             <TouchableOpacity

@@ -54,10 +54,24 @@ export default function Address(props) {
     }, [props.navigation])
 
     function initAddress() {
-        setAddressRequest({
-            ...addressRequest,
-            state_id: states[0].state_id
-        })
+        if (props.route.params.forUpdate) {
+            let address = props.route.params.addressDetails
+            setAddressRequest({
+                ...addressRequest,
+                full_name: address.full_name,
+                pincode: address.pincode,
+                house_number: address.house_number,
+                area: address.area,
+                phone: address.phone,
+                landmark: address.landmark,
+                city: address.city,
+                state_id: address.state_id
+            })
+        } else
+            setAddressRequest({
+                ...addressRequest,
+                state_id: states[0].state_id
+            })
     }
 
 
@@ -92,7 +106,17 @@ export default function Address(props) {
                     "Authorization": "Bearer " + token
                 }
 
-                let response = await postRequest("user/address/store", addressRequest, header)
+                let urlKey = props.route.params.forUpdate ? "update" : "store"
+
+                let request = {}
+                if(props.route.params.forUpdate){
+                    request = addressRequest
+                    request.id = props.route.params.addressDetails.id
+                }else{
+                    request = addressRequest
+                }
+
+                let response =  await postRequest(`user/address/${urlKey}`, request, header)
                 console.log("RESPOSNE", response)
                 if (response.success) {
                     if (Platform.OS == "android") {
@@ -313,6 +337,31 @@ export default function Address(props) {
                                     alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
                                     marginTop: normalize(15)
                                 }}>
+                                    <Picker
+                                        selectedValue={5}
+                                        width={"100%"}
+                                        textAlign={"left"}
+                                        data={states}
+                                        textSize={12}
+                                        textPadding={20}
+                                        emptySelectText={"Select State"}
+                                        onPickerItemSelected={(value, index) => {
+                                            console.log("VALUE", value)
+                                            setAddressRequest({
+                                                ...addressRequest,
+                                                state_id: value.state_id
+                                            })
+
+                                        }}
+                                    />
+                                </View>
+
+                                <View style={{
+                                    width: "90%", height: normalize(45), borderWidth: normalize(1),
+                                    borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
+                                    alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
+                                    marginTop: normalize(15)
+                                }}>
                                     <TextInput
                                         editable={!loading}
                                         value={addressRequest.city}
@@ -334,30 +383,7 @@ export default function Address(props) {
                                         }} />
                                 </View>
 
-                                <View style={{
-                                    width: "90%", height: normalize(45), borderWidth: normalize(1),
-                                    borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
-                                    alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
-                                    marginTop: normalize(15)
-                                }}>
-                                    <Picker
-                                        selectedValue={5}
-                                        width={"100%"}
-                                        textAlign={"left"}
-                                        data={states}
-                                        textSize={12}
-                                        textPadding={20}
-                                        emptySelectText={"Select State"}
-                                        onPickerItemSelected={(value, index) => {
-                                            console.log("VALUE", value)
-                                            setAddressRequest({
-                                                ...addressRequest,
-                                                state_id: value.state_id
-                                            })
 
-                                        }}
-                                    />
-                                </View>
 
                                 <TouchableOpacity
                                     disabled={loading}

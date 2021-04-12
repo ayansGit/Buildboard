@@ -12,7 +12,7 @@ import {
     TouchableOpacity,
     Image,
     Platform, ActivityIndicator,
-    ImageBackground,
+    ImageBackground, KeyboardAvoidingView,
     ToastAndroid, Alert, useWindowDimensions
 } from 'react-native';
 import Header from "../common/Header"
@@ -37,16 +37,23 @@ export default function ProductDetail(props) {
     const contentWidth = useWindowDimensions().width;
 
     const scrollViewRef = useRef()
-
+    
     const [isSignedIn, setSignedIn] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [loadImage, setLoadImage] = useState(false)
     const [product, setProduct] = useState(null)
     const [assemble, setAssemble] = useState(false)
     const [careInstruction, setCareInstruction] = useState(false)
+    const [properties, setProperties] = useState(false)
+    const [refund, setRefund] = useState(false)
     const [feature, setFeature] = useState(false)
     const [isAddedToWishlist, setAddToWishlist] = useState(false)
     const [pincode, setPincode] = useState("")
     const [pincodeCheking, setPincodeCheking] = useState("")
+    const [colors, setColors] = useState([])
+    const [productImages, setProductImages] = useState([])
+    const [selectedColor, setSelectedColor] = useState("")
+    const [wishlist, setWishlist] = useState([])
     const dispatch = useDispatch()
     const cart = useSelector(state => state.product.cart)
 
@@ -65,13 +72,65 @@ export default function ProductDetail(props) {
         }
         console.log("DATA: ", props.route.params.productId)
         try {
-            let response = await getRequest(`user/product/${props.route.params.productId}/details`)
+            let response = await getRequest(`user/product/${props.route.params.productId}/list`)
             console.log("RESPONSE", response)
+            let wishlist = await getWishlist()
             setProduct(response.data)
+            console.log("Wishlist", wishlist)
+            for (let i = 0; i < wishlist.length; i++) {
+                if (wishlist[i].product.product_id == response.data.product_id) {
+                    setAddToWishlist(true)
+                }
+            }
+            if (response.data.color != null && response.data.color.length > 0) {
+                setColors(response.data.color)
+                setSelectedColor(response.data.color[0])
+                await getImages(response.data.color[0])
+            } else {
+                let productImages = []
+                productImages.push(response.data.image)
+                setProductImages(productImages)
+            }
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+    }
+
+    async function getWishlist() {
+
+        let wishlist = []
+        try {
+            let token = await getToken()
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let response = await getRequest("user/wishlist", header)
+            console.log("RESPONSE", response)
+            // setWishlist(response.data)
+            wishlist = response.data
 
         } catch (error) {
             console.log("ERROR", error)
         }
+        return wishlist
+    }
+
+    async function getImages(color) {
+        setLoadImage(true)
+        try {
+            let request = {
+                color: color,
+                product_id: props.route.params.productId
+            }
+            let response = await postRequest(`user/product/imagewithcolor`, request)
+            console.log("RESPONSE", response)
+            setProductImages(response.data)
+
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+        setLoadImage(false)
     }
 
 
@@ -96,10 +155,10 @@ export default function ProductDetail(props) {
                     "Authorization": "Bearer " + token
                 }
                 let request = {
-                    vendor_id: product.product_id,
+                    vendor_id: product.vendor_id,
                     product_id: product.product_id,
                     quantity: 1,
-                    image: product.image
+                    image: productImages[0]
                 }
                 let response = await postRequest("user/cart/store", request, header)
                 console.log("ADD_TO_CART_RESP", response)
@@ -132,16 +191,17 @@ export default function ProductDetail(props) {
     }
 
     function buyNow() {
+        let cart = []
         let tempProduct = product
         tempProduct.quantity = 1
-        tempProduct.vendor_id = product.product_id
+        tempProduct.vendor_id = product.vendor_id
         cart.push(tempProduct)
-        dispatch(addToCartRequest(cart))
+        // dispatch(addToCartRequest(cart))
         props.navigation.navigate("OrderSummary", { cartList: cart })
     }
 
     async function checkPincode() {
-        
+
         if (pincode.length > 0) {
             setPincodeCheking(true)
             try {
@@ -155,11 +215,38 @@ export default function ProductDetail(props) {
                 alert(error)
             }
             setPincodeCheking(false)
-        }else{
+        } else {
             showAlert("Insert a pincode to check")
         }
-        
 
+
+    }
+
+    async function addToWishlist() {
+        try {
+            let token = await getToken()
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let request = {
+                vendor_id: product.vendor_id,
+                product_id: product.product_id,
+            }
+            let response = await postRequest("user/wishlist/store", request, header)
+            if (response.success) {
+                showAlert(response.message)
+            } else if (Array.isArray(response.message)) {
+                var message = ""
+                response.message.map((value) => { message = message + "\n" + value })
+                console.log("MSG", message)
+                alert(message)
+            } else {
+                alert(response.message)
+            }
+        } catch (error) {
+            alert(error)
+        }
     }
 
     function showLogintAlert() {
@@ -178,6 +265,8 @@ export default function ProductDetail(props) {
         );
     }
 
+
+
     return (
         <View style={{ flex: 1 }}>
             {Platform.OS == "android" ?
@@ -194,7 +283,9 @@ export default function ProductDetail(props) {
                         onBackPressed={() => {
                             props.navigation.goBack()
                         }} />
-                    <View style={{ flex: 1, width: "100%", alignItems: "center" }}>
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                        style={{ flex: 1, width: "100%", alignItems: "center" }}>
 
                         <ScrollView
                             showsVerticalScrollIndicator={false}
@@ -210,54 +301,81 @@ export default function ProductDetail(props) {
                                         shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
                                         backgroundColor: Color.white, marginTop: normalize(15), marginBottom: normalize(20)
                                     }}>
-                                        <ViewPager
-                                            pageMargin={normalize(5)}
-                                            initialPage={0}
-                                            style={{
-                                                width: "100%", height: "100%", backgroundColor: Color.white
-                                            }}>
-                                            <View
-                                                collapsable={false}
-                                                key={0}
+                                        {productImages.length > 0 ?
+                                            <ViewPager
+                                                pageMargin={normalize(5)}
+                                                initialPage={0}
                                                 style={{
-                                                    flex: 1, alignItems: "center", alignSelf: "center",
+                                                    width: "100%", height: "100%", backgroundColor: Color.white
                                                 }}>
-                                                <Image
-                                                    style={{ width: "100%", height: "100%", }}
-                                                    source={{ uri: product.image }}
-                                                    resizeMode="contain" />
-                                            </View>
-                                        </ViewPager>
 
-                                        <View style={{ flexDirection: "row", alignSelf: "center", marginTop: normalize(10) }}>
-                                            <TouchableOpacity style={{
-                                                height: normalize(15), width: normalize(15),
-                                                borderRadius: normalize(10), backgroundColor: Color.black, margin: normalize(5)
-                                            }} />
-                                            <TouchableOpacity style={{
-                                                height: normalize(15), width: normalize(15),
-                                                borderRadius: normalize(10), backgroundColor: Color.red, margin: normalize(5)
-                                            }} />
-                                            <TouchableOpacity style={{
-                                                height: normalize(15), width: normalize(15),
-                                                borderRadius: normalize(10), backgroundColor: Color.navyBlue, margin: normalize(5)
-                                            }} />
-                                            <TouchableOpacity style={{
-                                                height: normalize(15), width: normalize(15),
-                                                borderRadius: normalize(10), backgroundColor: Color.black, margin: normalize(5)
-                                            }} />
-                                        </View>
+                                                {productImages.map((value, index) => {
+                                                    return (
+                                                        <View
+                                                            collapsable={false}
+                                                            key={index}
+                                                            style={{
+                                                                flex: 1, alignItems: "center", alignSelf: "center",
+                                                            }}>
+                                                            <Image
+                                                                style={{ width: "100%", height: "100%", }}
+                                                                source={{ uri: value }}
+                                                                resizeMode="contain" />
+                                                        </View>
+                                                    )
+                                                })}
+
+                                            </ViewPager> : null}
+
 
                                         <TouchableOpacity
                                             style={{ position: "absolute", bottom: normalize(9), right: normalize(10) }}
                                             onPress={() => {
-                                                setAddToWishlist(!isAddedToWishlist)
+                                                if (isSignedIn) {
+                                                    setAddToWishlist(!isAddedToWishlist)
+                                                    addToWishlist()
+                                                } else {
+                                                    showLogintAlert()
+                                                }
+
                                             }}>
                                             <Image
                                                 style={{ height: normalize(16), width: normalize(16), margin: normalize(5) }}
                                                 source={isAddedToWishlist ? ImagePath.heart : ImagePath.heart_outline} />
                                         </TouchableOpacity>
+
+                                        {loadImage ? <ActivityIndicator style={{ position: "absolute", alignSelf: "center", bottom: normalize(100) }} size="large" color={Color.navyBlue} /> : null}
+
                                     </View> : null}
+
+                                <View style={{ flexDirection: "row", alignSelf: "center", }}>
+                                    {colors.map((value, index) => {
+                                        return (
+                                            <View style={{ marginLeft: normalize(10), marginRight: normalize(10), alignSelf: "flex-end", }}>
+                                                <TouchableOpacity
+                                                    disabled={false}
+                                                    key={index}
+                                                    onPress={() => {
+                                                        setSelectedColor(value)
+                                                        getImages(value)
+                                                    }}
+                                                    style={{
+                                                        padding: normalize(1),
+                                                        borderRadius: normalize(10),
+                                                        borderWidth: normalize(1), borderColor: selectedColor == value ? value : "#ffffff"
+                                                    }}>
+                                                    <View style={{
+                                                        height: normalize(16), width: normalize(16),
+                                                        borderRadius: normalize(10), backgroundColor: value,
+                                                    }}>
+
+                                                    </View>
+                                                </TouchableOpacity>
+                                            </View>
+
+                                        )
+                                    })}
+                                </View>
 
 
                                 {product ?
@@ -377,10 +495,11 @@ export default function ProductDetail(props) {
                                                         source={ImagePath.warranty} />
                                                 </View>
 
+                                                { }
                                                 <Text style={{
                                                     fontFamily: "Roboto-Bold", fontSize: normalize(12),
                                                     color: Color.darkGrey
-                                                }}>12 Months</Text>
+                                                }}>{product.warranty_in_year != null ? product.warranty_in_year : "12"} Months</Text>
                                                 <Text style={{
                                                     fontFamily: "Roboto-Regular", fontSize: normalize(12),
                                                     color: Color.darkGrey
@@ -428,15 +547,13 @@ export default function ProductDetail(props) {
                                                 <Text style={{
                                                     fontFamily: "Roboto-Bold", fontSize: normalize(12),
                                                     color: Color.darkGrey
-                                                }}>Ships in</Text>
+                                                }}>Easy</Text>
                                                 <Text style={{
                                                     fontFamily: "Roboto-Regular", fontSize: normalize(12),
                                                     color: Color.darkGrey
-                                                }}>1 Day</Text>
+                                                }}>Shipping</Text>
                                             </View>
                                         </View>
-
-
 
                                     </View> : null}
 
@@ -467,11 +584,49 @@ export default function ProductDetail(props) {
 
                                         </TouchableOpacity>
 
-                                        {feature && product.description ? <ScrollView style={{
-                                            width: "100%", height: normalize(130),
-                                            borderBottomWidth: normalize(1), borderTopColor: Color.darkGrey
-                                        }}>
+                                        {feature && product.description ? <ScrollView
+                                            nestedScrollEnabled={true}
+                                            style={{
+                                                width: "100%", height: normalize(130),
+                                                borderBottomWidth: normalize(1), borderTopColor: Color.darkGrey
+                                            }}>
                                             <HTML source={{ html: product.description }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} />
+                                        </ScrollView> : null}
+
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setProperties(!properties)
+                                                if (!properties) {
+                                                    scrollViewRef.current.scrollToEnd({ animated: true })
+                                                }
+                                            }}
+                                            style={{
+                                                width: "100%", flexDirection: "row", justifyContent: "space-between",
+                                                alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey, paddingTop: normalize(10),
+                                                paddingBottom: normalize(10), paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                color: Color.darkGrey,
+                                            }}>PROPERTIES</Text>
+
+                                            <Image
+                                                style={{ width: normalize(16), height: normalize(16) }}
+                                                source={properties ? ImagePath.up_arrow : ImagePath.down_arrow} />
+
+                                        </TouchableOpacity>
+
+                                        {properties ? <ScrollView
+                                            nestedScrollEnabled={true}
+                                            style={{
+                                                width: "100%", height: normalize(130),
+                                                borderBottomWidth: normalize(1),
+                                                borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                            }}>
+                                            {product.propeties ?
+                                                <HTML source={{ html: product.propeties }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
+
                                         </ScrollView> : null}
 
                                         <TouchableOpacity
@@ -497,11 +652,15 @@ export default function ProductDetail(props) {
 
                                         </TouchableOpacity>
 
-                                        {assemble ? <ScrollView style={{
-                                            width: "100%", height: normalize(130), borderBottomWidth: normalize(1),
-                                            borderBottomColor: Color.darkGrey, padding: normalize(15)
-                                        }}>
-                                            <Text style={{ fontFamily: "Roboto-Regular", fontSize: normalize(14) }}></Text>
+                                        {assemble ? <ScrollView
+                                            nestedScrollEnabled={true}
+                                            style={{
+                                                width: "100%", height: normalize(130), borderBottomWidth: normalize(1),
+                                                borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                            }}>
+                                            {product.assembly ?
+                                                <HTML source={{ html: product.assembly }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
+
                                         </ScrollView> : null}
 
                                         <TouchableOpacity
@@ -527,12 +686,52 @@ export default function ProductDetail(props) {
 
                                         </TouchableOpacity>
 
-                                        {careInstruction ? <ScrollView style={{
-                                            width: "100%", height: normalize(130),
-                                            borderBottomWidth: normalize(1),
-                                            borderBottomColor: Color.darkGrey, padding: normalize(15)
-                                        }}>
-                                            <Text style={{ fontFamily: "Roboto-Regular", fontSize: normalize(14) }}></Text>
+                                        {careInstruction ? <ScrollView
+                                            nestedScrollEnabled={true}
+                                            style={{
+                                                width: "100%", height: normalize(130),
+                                                borderBottomWidth: normalize(1),
+                                                borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                            }}>
+                                            {product.care_instructions ?
+                                                <HTML source={{ html: product.care_instructions }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
+
+                                        </ScrollView> : null}
+
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setRefund(!refund)
+                                                if (!refund) {
+                                                    scrollViewRef.current.scrollToEnd({ animated: true })
+                                                }
+                                            }}
+                                            style={{
+                                                width: "100%", flexDirection: "row", justifyContent: "space-between",
+                                                alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey, paddingTop: normalize(10),
+                                                paddingBottom: normalize(10), paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                color: Color.darkGrey,
+                                            }}>RETURN AND REFUND</Text>
+
+                                            <Image
+                                                style={{ width: normalize(16), height: normalize(16) }}
+                                                source={refund ? ImagePath.up_arrow : ImagePath.down_arrow} />
+
+                                        </TouchableOpacity>
+
+                                        {refund ? <ScrollView
+                                            nestedScrollEnabled={true}
+                                            style={{
+                                                width: "100%", height: normalize(130),
+                                                borderBottomWidth: normalize(1),
+                                                borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                            }}>
+                                            {product.returns ?
+                                                <HTML source={{ html: product.returns }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
+
                                         </ScrollView> : null}
 
 
@@ -592,7 +791,7 @@ export default function ProductDetail(props) {
                                 </ImageBackground>
                             </TouchableOpacity>
                         </View>
-                    </View>
+                    </KeyboardAvoidingView>
                 </View>
             </SafeAreaView>
         </View>

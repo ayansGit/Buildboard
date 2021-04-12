@@ -6,8 +6,11 @@ import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
 import { getUserName, getEmail, getToken, setAddress, setToken, setUserId, clearAppData } from "../../utils/storage";
 import { getRequest, postRequest } from "../../utils/apiRequest"
+import { addToCartRequest } from "../../actions/ProductAction";
 
 export default function NavigationDrawerMenu(props) {
+
+    const dispatch = useDispatch()
 
     const [loading, setLoading] = useState(false)
     const [userName, setUserName] = useState("")
@@ -49,6 +52,7 @@ export default function NavigationDrawerMenu(props) {
         // setToken("")
         // setAddress("")
         // setUserId("")
+        dispatch(addToCartRequest([]))
         await clearAppData()
         props.navigation.replace("SignedOutNavigator")
         ToastAndroid.show("You are logged out", ToastAndroid.SHORT);
@@ -109,6 +113,26 @@ export default function NavigationDrawerMenu(props) {
 
                     <TouchableOpacity
                         disabled={loading}
+                        onPress={() => { props.navigation.navigate("All Categories") }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>ALL CATEGORIES</Text>
+                    </TouchableOpacity>
+
+                    {isSignIn ? <TouchableOpacity
+                        disabled={loading}
+                        onPress={() => { props.navigation.navigate("My Orders") }}
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
+                        <Text style={{
+                            color: Color.darkGrey, fontSize: normalize(12),
+                            fontFamily: "Roboto-Medium", padding: normalize(15)
+                        }}>MY ORDERS</Text>
+                    </TouchableOpacity> : null}
+
+                    <TouchableOpacity
+                        disabled={loading}
                         onPress={() => { props.navigation.navigate("Design With Us") }}
                         style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
                         <Text style={{
@@ -124,18 +148,8 @@ export default function NavigationDrawerMenu(props) {
                         <Text style={{
                             color: Color.darkGrey, fontSize: normalize(12),
                             fontFamily: "Roboto-Medium", padding: normalize(15)
-                        }}>WANT TO BE A SELLER</Text>
+                        }}>BECOME A SELLER</Text>
                     </TouchableOpacity>
-
-                    {isSignIn ? <TouchableOpacity
-                        disabled={loading}
-                        onPress={() => { props.navigation.navigate("My Orders") }}
-                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
-                        <Text style={{
-                            color: Color.darkGrey, fontSize: normalize(12),
-                            fontFamily: "Roboto-Medium", padding: normalize(15)
-                        }}>MY ORDERS</Text>
-                    </TouchableOpacity> : null}
 
 
                     <TouchableOpacity
@@ -151,7 +165,7 @@ export default function NavigationDrawerMenu(props) {
                     <TouchableOpacity
                         disabled={loading}
                         onPress={async () => { await Linking.openURL("http://buildboardfurnishers.com/about-us"); }}
-                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: isSignIn ? Color.darkGrey : Color.white }}>
+                        style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
                         <Text style={{
                             color: Color.darkGrey, fontSize: normalize(12),
                             fontFamily: "Roboto-Medium", padding: normalize(15)
@@ -171,11 +185,24 @@ export default function NavigationDrawerMenu(props) {
                                     }}>LOGOUT</Text>
                             }
 
-                        </TouchableOpacity> : null}
+                        </TouchableOpacity> :
+                        <TouchableOpacity
+                            disabled={loading}
+                            onPress={() => { props.navigation.navigate("SignedOutNavigator") }}
+                            style={{ width: "100%", alignItems: "center", }}>
+                            {
+                                loading ? <ActivityIndicator style={{ marginTop: normalize(10) }} size="small" color={Color.navyBlue} /> :
+                                    <Text style={{
+                                        color: Color.darkGrey, fontSize: normalize(12),
+                                        fontFamily: "Roboto-Medium", padding: normalize(15)
+                                    }}>SIGN IN</Text>
+                            }
+
+                        </TouchableOpacity>}
 
                     <Text style={{
                         fontFamily: "Roboto-Medium",
-                        fontSize: normalize(12), color: Color.grey, textAlign: "center", 
+                        fontSize: normalize(12), color: Color.grey, textAlign: "center",
                         marginTop: normalize(40),
                     }}>
                         You can follow us on

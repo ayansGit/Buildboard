@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -20,12 +20,15 @@ import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersiv
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
 import { Value } from 'react-native-reanimated';
+import { getToken } from "../../utils/storage";
 
 
 
 
 export default function Home(props) {
 
+    var bannerPager = useRef()
+    const [isSignedIn, setSignedIn] = useState(false)
     const [categoryList, setCategoryList] = useState([])
     const [bannerList, setBannerList] = useState([])
     const [bannerImg, setBannerImg] = useState("")
@@ -33,20 +36,42 @@ export default function Home(props) {
 
     useEffect(() => {
         immersiveModeOff()
-        getCategoryList()
+        initialize()
         getBanner()
+        getCategoryList()
         getNewArrivalProducts()
     }, [])
+
+    async function initialize() {
+        try {
+            let token = await getToken()
+            if (token != null && token != undefined && token.length > 0) {
+                setSignedIn(true)
+            } else {
+                setSignedIn(false)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     async function getCategoryList() {
         try {
             let response = await getRequest("user/category")
             console.log("RESPONSE", response)
-            if (response.data.length > 9) {
-                var trimmedCategories = response.data.slice(0, 9)
-                trimmedCategories.push({})
-                setCategoryList(trimmedCategories)
-            } else setCategoryList(response.data)
+            let categoryList = []
+            for (let i = 0; i < response.data.length; i++) {
+                if (response.data[i].show_on_home == "Yes") {
+                    categoryList.push(response.data[i])
+                }
+            }
+            // if (categoryList.length > 9) {
+            //     var trimmedCategories = categoryList.slice(0, 9)
+            //     trimmedCategories.push({})
+            //     setCategoryList(trimmedCategories)
+            // } else setCategoryList(categoryList)
+
+            setCategoryList(categoryList)
 
         } catch (error) {
             console.log("ERROR", error)
@@ -60,11 +85,32 @@ export default function Home(props) {
             if (response.data.length > 0) {
                 setBannerImg(response.data[0].image)
                 setBannerList(response.data)
+                //changeBanner(response.data)
             }
 
         } catch (error) {
             console.log("ERROR", error)
         }
+
+    }
+
+    function changeBanner(bannerList) {
+        var count = 0
+        var interval = setInterval(function () {
+            if (count < (bannerList.length)) {
+                if (bannerPager != null) {
+                    console.log('COUNT 2: ', count)
+                    bannerPager.current.setPage(count)
+                    count++
+                }
+            } else {
+                // clearInterval(interval)
+                // changeBanner()
+                count = 0
+            }
+
+            // console.log('COUNT: ', count)
+        }, 2000);
     }
 
     async function getNewArrivalProducts() {
@@ -109,23 +155,26 @@ export default function Home(props) {
                 marginLeft: normalize(12), marginRight: normalize(12), alignItems: "center"
             }}
                 onPress={() => {
-                    if (data.index == 9) {
-                        props.navigation.navigate("CategoryList")
-                    } else {
-                        props.navigation.navigate("ProductList", { categoryId: data.item.id, categoryName: data.item.name })
-                    }
+                    // if (data.index == 9) {
+                    //     props.navigation.navigate("All Categories")
+                    // } else {
+                    //     props.navigation.navigate("ProductList", { categoryId: data.item.id, categoryName: data.item.name })
+                    // }
+                    props.navigation.navigate("ProductList", { categoryId: data.item.id, categoryName: data.item.name })
                 }}>
                 <Image
-                    style={{ height: normalize(30), width: normalize(30), }}
-                    source={data.index == 9 ? ImagePath.more : ImagePath.cabinet}
-                    resizeMode="contain" />
+                    style={{ height: normalize(32), width: normalize(32), }}
+                    // source={data.index == 9 ? ImagePath.more : ImagePath.cabinet}
+                    source={{ uri: data.item.icon }}
+                    resizeMode="cover" />
                 <Text
                     numberOfLines={2}
                     style={{
                         width: normalize(50), fontFamily: "Roboto-Regular",
-                        fontSize: normalize(10), color: Color.grey, textAlign: "center", marginTop: normalize(2)
+                        fontSize: normalize(10), color: Color.navyBlue, textAlign: "center", marginTop: normalize(2)
                     }}>
-                    {data.index == 9 ? "MORE" : data.item.name.toUpperCase()}
+                    {/* {data.index == 9 ? "MORE" : data.item.name.toUpperCase()} */}
+                    {data.item.name.toUpperCase()}
                 </Text>
 
             </TouchableOpacity>
@@ -177,6 +226,8 @@ export default function Home(props) {
 
                     <Header
                         navigation={props.navigation}
+                        showWishlist={isSignedIn}
+                        isSignedIn={isSignedIn}
                         onDrawerButtonPressed={() => {
                             props.navigation.openDrawer()
                         }} />
@@ -186,7 +237,8 @@ export default function Home(props) {
                             borderRadius: normalize(25), flexDirection: "row", justifyContent: "space-between",
                             alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
                             marginTop: normalize(10), marginBottom: normalize(10)
-                        }}>
+                        }}
+                            onPress={() => props.navigation.navigate("Search")}>
                             <Text style={{
                                 fontSize: normalize(14), fontFamily: "Roboto-Regular",
                                 color: Color.grey
@@ -202,6 +254,7 @@ export default function Home(props) {
 
                             {bannerList.length > 0 ?
                                 <ViewPager
+                                    ref={bannerPager}
                                     pageMargin={normalize(10)}
                                     style={{ width: "100%", height: normalize(200), marginTop: normalize(5) }}>
                                     {bannerList.map((value, index) => {
@@ -221,7 +274,7 @@ export default function Home(props) {
 
                             {categoryList.length > 0 ? <Text style={{
                                 fontFamily: "Roboto-Regular", fontSize: normalize(12),
-                                color: Color.grey, marginTop: normalize(5), marginBottom: normalize(5),
+                                color: Color.darkGrey, marginTop: normalize(5), marginBottom: normalize(5),
                                 marginStart: "6%"
                             }}>Categories</Text> : null}
 
@@ -255,7 +308,7 @@ export default function Home(props) {
                                 <Text style={{
                                     fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
                                     marginLeft: "6%", marginTop: normalize(5)
-                                }}>Most Popular</Text> : null}
+                                }}>Trending</Text> : null}
 
 
                             <FlatList

@@ -18,18 +18,34 @@ import ImagePath from '../../assets/ImagePath';
 import { getRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+import { getToken } from "../../utils/storage";
 
 
 
 
 export default function CategoryList(props) {
 
+    const [isSignedIn, setSignedIn] = useState(false)
     const [categoryList, setCategoryList] = useState([])
 
     useEffect(() => {
         console.log("Cat id: ", props.route.params)
+        initialize()
         getCategoryList()
     }, [])
+
+    async function initialize() {
+        try {
+            let token = await getToken()
+            if (token != null && token != undefined && token.length > 0) {
+                setSignedIn(true)
+            } else {
+                setSignedIn(false)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     async function getCategoryList() {
         try {
@@ -83,11 +99,12 @@ export default function CategoryList(props) {
                 } : { flex: 1 }}>
                     <Header
                         navigation={props.navigation}
-                        containNavDrawer={false}
+                        containNavDrawer={true}
                         title={"Categories"}
-                        onBackPressed={() => {
-                            props.navigation.goBack()
-                        }} />
+                        isSignedIn = {isSignedIn}
+                        onDrawerButtonPressed={() => {
+                            props.navigation.openDrawer()
+                        }}/>
                     <View style={{ width: "100%", alignItems: "center" }}>
                         <FlatList
                             style={{ width: "100%", }}

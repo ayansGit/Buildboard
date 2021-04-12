@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -26,6 +26,8 @@ import { FieldType, validate } from "../../utils/validation"
 export default function DesignWithUs(props) {
 
     const TAG = "DesignWithUs"
+    var bannerPager = useRef()
+    const [isSignedIn, setSignedIn] = useState(false)
     const [bannerList, setBannerList] = useState([])
     const [designRequest, setDesignRequest] = useState({
         phone: "",
@@ -39,6 +41,7 @@ export default function DesignWithUs(props) {
 
     useEffect(() => {
         fadeIn()
+        initialize()
         getBanner()
     }, [])
 
@@ -51,17 +54,50 @@ export default function DesignWithUs(props) {
         }).start();
     }
 
+    async function initialize() {
+        try {
+            let token = await getToken()
+            if (token != null && token != undefined && token.length > 0) {
+                setSignedIn(true)
+            } else {
+                setSignedIn(false)
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     async function getBanner() {
         try {
             let response = await getRequest("user/banners")
             console.log("RESPONSE", response)
             if (response.data.length > 0) {
                 setBannerList(response.data)
+                changeBanner(response.data)
             }
 
         } catch (error) {
             console.log("ERROR", error)
         }
+    }
+
+    function changeBanner(bannerList) {
+        var count = 0
+        var interval = setInterval(function () {
+            if (count < (bannerList.length)) {
+                if (bannerPager != null) {
+                    console.log('COUNT 3: ', count)
+                    bannerPager.current.setPage(count)
+                    count++
+                }
+            } else {
+                // clearInterval(interval)
+                // changeBanner()
+                count = 0
+            }
+
+            // console.log('COUNT: ', count)
+        }, 2000);
     }
 
     async function request() {
@@ -112,6 +148,7 @@ export default function DesignWithUs(props) {
                         <Header
                             loading={false}
                             title={""}
+                            isSignedIn={isSignedIn}
                             navigation={props.navigation}
                             onDrawerButtonPressed={() => {
                                 props.navigation.openDrawer()
@@ -119,7 +156,7 @@ export default function DesignWithUs(props) {
 
                         <ScrollView style={{ width: "100%" }}>
                             <ImageBackground style={{
-                                width: "100%", height: normalize(300), justifyContent: "center",
+                                width: "100%", height: normalize(220), justifyContent: "center",
                                 alignItems: "center"
                             }}
                                 source={ImagePath.contact_us}
@@ -135,25 +172,6 @@ export default function DesignWithUs(props) {
                                     fontFamily: "Roboto-Medium", fontSize: normalize(24), textAlign: "center"
                                 }}>{"CUSTOMIZE\n\nYOUR\n\nINTERIOR"}</Animated.Text>
                             </ImageBackground>
-                            {bannerList.length > 0 ?
-                                <ViewPager
-                                    pageMargin={normalize(10)}
-                                    style={{ width: "100%", height: normalize(150), }}>
-                                    {bannerList.map((value, index) => {
-                                        return (
-                                            <View
-                                                collapsable={false}
-                                                key={index}
-                                                style={{ width: "100%", height: "100%", marginTop: normalize(10) }}>
-                                                <Image
-                                                    style={{ width: "100%", height: "100%", }}
-                                                    source={{ uri: value.image }}
-                                                    resizeMode="cover" />
-                                            </View>
-                                        )
-                                    })}
-
-                                </ViewPager> : null}
 
                             <View style={{ width: "100%", alignItems: "center" }}>
                                 <View style={{
@@ -260,6 +278,26 @@ export default function DesignWithUs(props) {
                             </View>
 
 
+                            {bannerList.length > 0 ?
+                                <ViewPager
+                                    ref={bannerPager}
+                                    pageMargin={normalize(10)}
+                                    style={{ width: "100%", height: normalize(200), }}>
+                                    {bannerList.map((value, index) => {
+                                        return (
+                                            <View
+                                                collapsable={false}
+                                                key={index}
+                                                style={{ width: "100%", height: "100%", marginTop: normalize(10) }}>
+                                                <Image
+                                                    style={{ width: "100%", height: "100%", }}
+                                                    source={{ uri: value.image }}
+                                                    resizeMode="cover" />
+                                            </View>
+                                        )
+                                    })}
+
+                                </ViewPager> : null}
 
 
                             <Text style={{

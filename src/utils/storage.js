@@ -6,9 +6,11 @@ export const type = {
     userName: "buildboard.userName",
     email: "buildboard.email",
     address: "buildboard.address",
+    pincode: "buildboard.pincode",
+    addressId: "buildboard.addressId",
     phone: "buildboard.phone",
     company: "buildboard.company",
-    gstNumber:  "buildboard.gstNumber"
+    gstNumber: "buildboard.gstNumber"
 }
 
 export async function clearAppData() {
@@ -125,6 +127,50 @@ export async function getAddress() {
     try {
         value = await AsyncStorage.getItem(
             type.address)
+    } catch (error) {
+        // Error saving data
+    }
+    return value;
+}
+
+export async function setPincode(value) {
+    try {
+        await AsyncStorage.setItem(
+            type.pincode,
+            value
+        );
+    } catch (error) {
+        // Error saving data
+    }
+}
+
+export async function getPincode() {
+    let value = ""
+    try {
+        value = await AsyncStorage.getItem(
+            type.pincode)
+    } catch (error) {
+        // Error saving data
+    }
+    return value;
+}
+
+export async function setAddressId(value) {
+    try {
+        await AsyncStorage.setItem(
+            type.addressId,
+            value
+        );
+    } catch (error) {
+        // Error saving data
+    }
+}
+
+export async function getAddressId() {
+    let value = ""
+    try {
+        value = await AsyncStorage.getItem(
+            type.addressId)
     } catch (error) {
         // Error saving data
     }

@@ -16,6 +16,8 @@ import AboutUs from "../components/screens/AboutUs"
 import ProductDescription from "../components/screens/ProductDescription"
 import FAQ from "../components/screens/FAQ"
 import GstForm from "../components/screens/GstForm"
+import Wishlist from "../components/screens/Wishlist"
+import Search from "../components/screens/Search.js"
 
 const Stack = createStackNavigator();
 
@@ -26,7 +28,7 @@ export default function SignedInNavigator() {
         <Stack.Screen name="ProductList" component = {ProductList}/>
         <Stack.Screen name="ProductDetail" component = {ProductDetail}/>
         <Stack.Screen name="ProductDescription" component = {ProductDescription}/>
-        <Stack.Screen name="CategoryList" component = {CategoryList}/>
+        {/* <Stack.Screen name="CategoryList" component = {CategoryList}/> */}
         <Stack.Screen name="ContactUs" component = {ContactUs}/>
         <Stack.Screen name="Cart" component = {Cart}/>
         <Stack.Screen name="Account" component = {Account}/>
@@ -38,6 +40,8 @@ export default function SignedInNavigator() {
         <Stack.Screen name="AboutUs" component = {AboutUs}/>
         <Stack.Screen name="FAQ" component = {FAQ}/>
         <Stack.Screen name="GstForm" component = {GstForm}/>
+        <Stack.Screen name="Wishlist" component = {Wishlist}/>
+        <Stack.Screen name="Search" component = {Search}/>
       </Stack.Navigator>
   );
 }

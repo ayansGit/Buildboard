@@ -171,7 +171,7 @@ export default function Account(props) {
 
                                 </TouchableOpacity>
 
-                                <TouchableOpacity
+                                {/* <TouchableOpacity
                                     disabled={loading}
                                     style={{
                                         width: "90%", flexDirection: "row", borderRadius: normalize(4),
@@ -205,7 +205,7 @@ export default function Account(props) {
                                                 style={{ height: normalize(15), width: normalize(15) }}
                                                 source={ImagePath.add} /> : null : null}
 
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
                         </ScrollView>
                     </View>

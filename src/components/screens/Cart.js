@@ -28,6 +28,35 @@ export default function Cart(props) {
     const dispatch = useDispatch()
     const cart = useSelector(state => state.product.cart)
 
+    useEffect(() => {
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            // The screen is focused
+            // Call any action
+            getCartList()
+        });
+        return unsubscribe
+    }, [props.navigation])
+
+    async function getCartList() {
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            try {
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+                let response = await getRequest(`user/cart/list`, header)
+                console.log("RESPONSE", response)
+                if (response.success) {
+                    dispatch(addToCartRequest(response.data))
+                }
+
+            } catch (error) {
+                console.log("ERROR", error)
+            }
+        }
+
+    }
 
     async function addItem(item, addProduct) {
         let cartList = cart
@@ -52,7 +81,7 @@ export default function Cart(props) {
                 "Authorization": "Bearer " + token
             }
             let request = {
-                vendor_id: product.product_id,
+                vendor_id: product.vendor_id,
                 product_id: product.product_id,
                 quantity: product.quantity,
                 image: product.image
@@ -112,7 +141,7 @@ export default function Cart(props) {
             let url = `user/cart/${item.cart_id}/remove`
             console.log("URL", url)
             let response = await getRequest(url, header)
-            console.log("RESPONSE: "+response)
+            console.log("RESPONSE: " + response)
             if (response.success) {
                 for (let i = 0; i < cartList.length; i++) {
                     if (item.product_id == cartList[i].product_id) {
@@ -141,7 +170,7 @@ export default function Cart(props) {
                     }
                 }
                 dispatch(addToCartRequest(cartList))
-                console.log("ERROR: "+response)
+                console.log("ERROR: " + response)
                 alert(response.message)
             }
         } catch (error) {
@@ -162,11 +191,14 @@ export default function Cart(props) {
 
         console.log("DATA_ITEM: " + data.index + ": " + data.item.loading)
         return (
-            <View style={{
+            <TouchableOpacity style={{
                 width: "100%", marginTop: normalize(10), paddingStart: "5%", paddingEnd: "2%", paddingBottom: "5%", flexDirection: "row",
                 borderBottomWidth: normalize(1), borderBottomColor: Color.grey,
                 justifyContent: "space-between", alignItems: "flex-start"
-            }}>
+            }}
+                onPress={() => {
+                    props.navigation.navigate("ProductDetail", { productId: data.item.product_id })
+                }}>
                 <Image
                     style={{
                         width: "30%", height: normalize(60), borderRadius: normalize(1), borderWidth: normalize(1),
@@ -214,15 +246,15 @@ export default function Cart(props) {
 
                     </View>
                 </View>
-                <TouchableOpacity 
-                disabled = {data.item.loading != undefined && data.item.loading}
-                onPress = {()=> removeItem(data.item)}
-                style={{ padding: normalize(5) }}>
+                <TouchableOpacity
+                    disabled={data.item.loading != undefined && data.item.loading}
+                    onPress={() => removeItem(data.item)}
+                    style={{ padding: normalize(5) }}>
                     <Image
                         source={ImagePath.delete}
                         style={{ height: normalize(10), width: normalize(10) }} />
                 </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
         )
     }
 
@@ -247,7 +279,7 @@ export default function Cart(props) {
 
                     {cart.length == 0 ? <Text style={{
                         fontFamily: "Roboto-Medium", fontSize: normalize(18),
-                        color: Color.grey, marginTop: "40%"
+                        color: Color.grey, marginTop: "40%", alignSelf: "center"
                     }}>YOUR CART IS EMPTY</Text> : null}
 
                     <FlatList
@@ -264,7 +296,7 @@ export default function Cart(props) {
                                 width: "100%", height: normalize(40), position: "absolute",
                                 bottom: 0
                             }}
-                            onPress={() => props.navigation.navigate("OrderSummary", {cartList: cart})}>
+                            onPress={() => props.navigation.navigate("OrderSummary", { cartList: cart })}>
                             <ImageBackground
                                 style={{
                                     height: "100%", width: "100%", alignItems: "center",

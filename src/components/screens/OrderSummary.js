@@ -22,22 +22,34 @@ import ImagePath from '../../assets/ImagePath';
 import { getRequest, postRequest } from "../../utils/apiRequest"
 import { addToCartRequest } from "../../actions/ProductAction";
 import { Checkbox, FAB } from 'react-native-paper';
-import { getUserId, getToken, getAddress, getUserName, getPhone, getCompany, getGST, } from "../../utils/storage";
+import { getUserId, getToken, getAddress, getUserName, getPhone, getCompany, getGST, getPincode, getEmail } from "../../utils/storage";
+import { showAlert } from "../../utils/Utils"
+import RazorpayCheckout from 'react-native-razorpay';
 
 export default function OrderSummary(props) {
 
-    const cart = useSelector(state => state.product.cart)
+    let cartArray = props.route.params.cartList // useSelector(state => state.product.cart)
+    let cartVal = props.route.params.cartList
+
+    const [cartData, setCart] = useState([])
+    const [cartDataWithoutDiscount, setCartDataWithoutDiscount] = useState([])
+    const [totalPriceNoDiscount, setTotalPriceWithNoDiscount] = useState(0)
     const dispatch = useDispatch()
-    const [isCod, setCod] = useState(true)
+    const [isCod, setCod] = useState(false)
     const [loading, setLoading] = useState(false)
     const [couponCheking, setCouponCheking] = useState("")
     const [address, setAddress] = useState("")
     const [name, setName] = useState("")
     const [phone, setPhone] = useState("")
     const [couponCode, setCouponCode] = useState("")
+    const [discount, setDiscount] = useState(0)
+    const [isOrderPlacable, setOrderPlacable] = useState(false)
 
+    console.log("CART !!:", props.route.params.cartList)
     useEffect(() => {
         // getOrderList()
+        setTotalPriceWithNoDiscount(getProductPriceWithoutDiscount())
+        setCartDataWithoutDiscount(getCartWithoutDiscount())
         const unsubscribe = props.navigation.addListener('focus', () => {
             // The screen is focused
             // Call any action
@@ -51,20 +63,130 @@ export default function OrderSummary(props) {
         let addressVal = await getAddress()
         let name = await getUserName()
         let phoneVal = await getPhone()
+        let pincode = await getPincode()
+
+        setCart(cartArray)
         if (addressVal != null && addressVal != undefined && addressVal.length > 0) {
             setAddress(addressVal)
         }
         setName(name)
         setPhone(phoneVal)
+        if (pincode != null && pincode != undefined && pincode.length > 0) {
+            checkPincode(pincode)
+        }
+
 
     }
 
-    async function placeOrder() {
+    async function checkPincode(pincode) {
+
+        if (pincode.length > 0) {
+            try {
+                let response = await getRequest(`user/pincode/${pincode}/list`)
+                if (response.success) {
+                    setOrderPlacable(true)
+                } else {
+                    setOrderPlacable(false)
+                    showAlert("Product is not available on this pincode")
+                }
+            } catch (error) {
+                alert(error)
+            }
+        } else {
+            showAlert("Insert a pincode to check")
+        }
+    }
+
+    async function checkCoupon(couponCode) {
+        setCouponCheking(true)
+        try {
+            let token = await getToken()
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let response = await postRequest("user/coupon/check", { name: couponCode }, header)
+            console.log(response)
+            if (response.success) {
+                console.log("RESPONSE", response)
+                if (response.data.type == "Fixed") {
+                    setDiscount(response.data.value)
+                    updateCartOnDiscount(response.data.value)
+                } else {
+                    let discount = getProductPrice() * (response.data.value / 100)
+                    discount = discount.toFixed(2)
+                    discount = (discount % 1 != 0 ? discount : Math.floor(discount))
+                    setDiscount(discount)
+                    updateCartOnDiscount(discount)
+                }
+                showAlert(response.data.description)
+            } else {
+                alert("Coupon not valid")
+            }
+        } catch (error) {
+            alert(error.message)
+        }
+        setCouponCheking(false)
+    }
+
+    function updateCartOnDiscount(discount) {
+        let newCart = []
+        let tempCartData = cartData
+        let discountedValue = discount
+        tempCartData.map((value, index) => {
+            let item = value
+            if (discountedValue > 0) {
+                let discountedValueRem = item.price - discountedValue
+                if (discountedValueRem >= 0) {
+                    item.price = discountedValueRem
+                    item.discount = discountedValue
+                    discountedValue = 0
+                } else {
+                    discountedValue = (-1) * discountedValueRem
+                    item.price = 0
+                    item.discount = item.price
+                }
+            }
+            newCart.push(item)
+        })
+
+        setCart(newCart)
+    }
+
+    async function refreshCartList() {
+
+        setCouponCheking(true)
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            try {
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+                let response = await getRequest(`user/cart/list`, header)
+                console.log("RESPONSE", response)
+                if (response.success) {
+                    setCart(response.data)
+                    setCouponCode("")
+                    setDiscount(0)
+                    dispatch(addToCartRequest(response.data))
+                }
+
+            } catch (error) {
+                console.log("ERROR", error)
+            }
+        }
+
+        setCouponCheking(false)
+
+    }
+
+    async function placeOrder(transactionId) {
         setLoading(true)
         var userId = parseInt(await getUserId())
         console.log("USER_ID: ", userId)
-        console.log("PLACE_ORDER: ", props.route.params.cartList)
-        let cartList = props.route.params.cartList
+        console.log("PLACE_ORDER: ", cartData)
+        let cartList = cartData
 
         let gstNumber = await getGST()
         let company = await getCompany()
@@ -80,6 +202,7 @@ export default function OrderSummary(props) {
         }
         for (let i = 0; i < cartList.length; i++) {
             orderRequest.order.push({
+                product_id: cartList[i].product_id,
                 vendor_id: cartList[i].vendor_id,
                 quantity: cartList[i].quantity,
                 product_name: cartList[i].name,
@@ -88,14 +211,14 @@ export default function OrderSummary(props) {
                 full_name: name,
                 address_id: address,
                 phone: phone,
-                payment_type: "cod",
-                transaction_id: null,
+                payment_type: isCod ? "cod" : "razorpay",
+                transaction_id: transactionId,
                 gst_number: gst_number,
                 company_name: company_name
             })
         }
 
-        console.log("ORDER_REQ: ", orderRequest)
+        console.log("ORDER_REQ: ", JSON.stringify(orderRequest))
 
         try {
             let token = await getToken()
@@ -119,10 +242,38 @@ export default function OrderSummary(props) {
                 }
             }
         } catch (error) {
-            alert(error)
+            alert(error.message)
         }
         setLoading(false)
 
+    }
+
+    async function openRazorpay() {
+        let username = await getUserName()
+        let email = await getEmail()
+        let phone = await getPhone()
+        var options = {
+            description: 'Order price',
+            image: ImagePath.chooseIcon,
+            currency: 'INR',
+            key: 'rzp_test_NIv9pU24SLVgtS',
+            amount: `${(getProductPrice()) * 100}`,
+            name: 'Buildboard Furnishers',
+            prefill: {
+                email: email,
+                name: username,
+                contact: phone
+            },
+            theme: { color: Color.navyBlue },
+        }
+        RazorpayCheckout.open(options).then((data) => {
+            // handle success
+            // alert(`Success: ${data.razorpay_payment_id}`);
+            placeOrder(data.razorpay_payment_id)
+        }).catch((error) => {
+            // handle failure
+            alert("Your payment is cancelled");
+        });
     }
 
     function cartItem(data) {
@@ -130,7 +281,7 @@ export default function OrderSummary(props) {
         return (
             <View style={{
                 width: "100%", marginTop: normalize(10), paddingStart: "5%", paddingEnd: "2%", paddingBottom: "5%", flexDirection: "row",
-                borderBottomWidth: normalize(1), borderBottomColor: data.index == cart.length - 1 ? "#00000000" : Color.grey,
+                borderBottomWidth: normalize(1), borderBottomColor: data.index == cartData.length - 1 ? "#00000000" : Color.grey,
                 alignItems: "flex-start"
             }}>
                 <Image
@@ -140,7 +291,7 @@ export default function OrderSummary(props) {
                     }}
                     resizeMode="contain"
                     source={{ uri: data.item.image }} />
-                <View style={{ width: "50%", paddingTop: normalize(5), marginLeft: normalize(15) }}>
+                <View style={{ width: "50%", paddingTop: normalize(3), marginLeft: normalize(15) }}>
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Medium", fontSize: normalize(12),
                         color: Color.navyBlue
@@ -152,6 +303,19 @@ export default function OrderSummary(props) {
                     }}
                     >{`₹${data.item.price}`}</Text>
 
+                    {data.item.discount != undefined ?
+                        <Text style={{
+                            width: "100%", fontFamily: "Roboto-Regular", fontSize: normalize(12),
+                            color: Color.darkGrey, marginTop: normalize(3), marginLeft: normalize(1)
+                        }}>{`Discount: ₹${data.item.discount}`}</Text> : null}
+
+
+                    <Text style={{
+                        width: "100%", fontFamily: "Roboto-Regular", fontSize: normalize(12),
+                        color: Color.darkGrey, marginTop: normalize(3), marginLeft: normalize(1)
+                    }}
+                    >{`Quantity: ${data.item.quantity}`}</Text>
+
                 </View>
 
             </View>
@@ -160,16 +324,32 @@ export default function OrderSummary(props) {
 
     function getProductPrice() {
         let price = 0;
-        for (let i = 0; i < cart.length; i++) {
-            price = (price + cart[i].price) * cart[i].quantity
+        for (let i = 0; i < cartData.length; i++) {
+            price = (price + cartData[i].price) * cartData[i].quantity
         }
         return price
     }
 
+    function getProductPriceWithoutDiscount() {
+        let price = 0;
+        for (let i = 0; i < cartArray.length; i++) {
+            price = (price + cartArray[i].price) * cartArray[i].quantity
+        }
+        return price
+    }
+
+    function getCartWithoutDiscount() {
+        let cart = []
+        cartArray.map((value, index) => {
+            cart.push(value)
+        })
+        return cart
+    }
+
     function getTotalProductQuantity(params) {
         let quantity = 0
-        for (let i = 0; i < cart.length; i++) {
-            quantity = quantity + cart[i].quantity
+        for (let i = 0; i < cartArray.length; i++) {
+            quantity = quantity + cartArray[i].quantity
         }
         return quantity
     }
@@ -198,7 +378,7 @@ export default function OrderSummary(props) {
                             scrollEnabled={false}
                             style={{ width: "100%" }}
                             renderItem={(data) => cartItem(data)}
-                            data={cart}
+                            data={cartData}
                             keyExtractor={(item, index) => index.toString()} />
                         <View style={{
                             width: "90%", alignSelf: "center", backgroundColor: Color.white, padding: normalize(15),
@@ -240,36 +420,70 @@ export default function OrderSummary(props) {
                             shadowOpacity: 0.3, shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
                             alignItems: "flex-start", marginTop: normalize(10)
                         }}>
-                            <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
 
-                                <TextInput style={{
-                                    width: "100%", borderBottomWidth: normalize(1),
-                                    borderBottomColor: Color.veryLightGrey, fontFamily: "Roboto-Regular",
-                                    fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
-                                    paddingBottom: Platform.OS == "ios" ? normalize(5) : 0
-                                }}
-                                    value={couponCode}
-                                    onChangeText={(text) => setCouponCode(text)}
-                                    placeholder={"Coupon code"}
-                                    placeholderTextColor={Color.grey}
-                                    selectionColor={Color.blue}
-                                    numberOfLines={1} />
 
-                                <TouchableOpacity
-                                    style={{
-                                        borderRadius: normalize(5), padding: normalize(4),
-                                        paddingLeft: normalize(10), paddingRight: normalize(10),
-                                        backgroundColor: Color.blue, right: 0, position: "absolute"
-                                    }}>
-                                    {couponCheking ? <ActivityIndicator size="small" color={Color.white} /> :
-                                        <Text style={{
-                                            color: Color.white,
-                                            fontFamily: "Roboto-Medium",
-                                            fontSize: normalize(12)
-                                        }}>Add</Text>}
+                            {discount == 0 ?
+                                <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
 
-                                </TouchableOpacity>
-                            </View>
+                                    <TextInput style={{
+                                        width: "100%", borderBottomWidth: normalize(1),
+                                        borderBottomColor: Color.veryLightGrey, fontFamily: "Roboto-Regular",
+                                        fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
+                                        paddingBottom: Platform.OS == "ios" ? normalize(5) : 0
+                                    }}
+                                        returnKeyType="go"
+                                        onSubmitEditing={() => {
+                                            checkCoupon(couponCode)
+                                        }}
+                                        value={couponCode}
+                                        onChangeText={(text) => setCouponCode(text)}
+                                        placeholder={"Coupon code"}
+                                        placeholderTextColor={Color.grey}
+                                        selectionColor={Color.blue}
+                                        numberOfLines={1} />
+
+                                    <TouchableOpacity
+                                        disabled={couponCheking || loading}
+                                        style={{
+                                            borderRadius: normalize(5), padding: normalize(4),
+                                            paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            backgroundColor: Color.blue, right: 0, position: "absolute"
+                                        }}
+                                        onPress={() => checkCoupon(couponCode)}>
+                                        {couponCheking ? <ActivityIndicator size="small" color={Color.white} /> :
+                                            <Text style={{
+                                                color: Color.white,
+                                                fontFamily: "Roboto-Medium",
+                                                fontSize: normalize(12)
+                                            }}>Add</Text>}
+
+                                    </TouchableOpacity>
+                                </View> :
+                                <View style={{ flexDirection: "row", width: "100%", alignItems: "center", justifyContent: "space-between" }}>
+                                    <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Regular", color: Color.grey }}>
+                                        Coupon applied  <Text style={{ fontSize: normalize(13), fontFamily: "Roboto-Bold", color: Color.navyBlue }}>
+                                            {couponCode}
+                                        </Text>
+                                    </Text>
+
+                                    <TouchableOpacity
+                                        disabled={couponCheking}
+                                        style={{
+                                            borderRadius: normalize(5), padding: normalize(4),
+                                            paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            backgroundColor: Color.blue,
+                                        }}
+                                        onPress={() => refreshCartList()}>
+                                        {couponCheking ? <ActivityIndicator size="small" color={Color.white} /> :
+                                            <Text style={{
+                                                color: Color.white,
+                                                fontFamily: "Roboto-Medium",
+                                                fontSize: normalize(12)
+                                            }}>Remove</Text>}
+
+                                    </TouchableOpacity>
+                                </View>}
+
                         </View>
 
                         <View style={{
@@ -299,7 +513,7 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(14), color: Color.navyBlue,
                                     fontFamily: "Roboto-Medium", marginTop: normalize(10), marginLeft: normalize(10)
-                                }}>{`₹${getProductPrice()}`}</Text>
+                                }}>{`₹${totalPriceNoDiscount}`}</Text>
                             </View>
 
                             <View style={{
@@ -314,7 +528,7 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(14), color: Color.navyBlue,
                                     fontFamily: "Roboto-Medium", marginLeft: normalize(10)
-                                }}>{`₹500`}</Text>
+                                }}>{`₹${discount}`}</Text>
                             </View>
 
                             <View style={{
@@ -329,7 +543,7 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(16), color: Color.navyBlue,
                                     fontFamily: "Roboto-Medium", marginLeft: normalize(10)
-                                }}>{`₹${getProductPrice() - 500}`}</Text>
+                                }}>{`₹${getProductPrice()}`}</Text>
                             </View>
                         </View>
 
@@ -404,39 +618,42 @@ export default function OrderSummary(props) {
 
                     </ScrollView>
 
-                    <View style={{
-                        width: "100%", flexDirection: "row", padding: normalize(10), alignItems: "center",
-                        justifyContent: "space-between", backgroundColor: Color.white, elevation: normalize(9),
-                        position: "absolute", bottom: 0
-                    }}>
-                        <Text style={{
-                            fontSize: normalize(18), color: Color.navyBlue, width: "35%",
-                            fontFamily: "Roboto-Medium", marginLeft: normalize(10)
-                        }}>{`₹${getProductPrice() - 500}`}</Text>
+                    {isOrderPlacable ?
+                        <View style={{
+                            width: "100%", flexDirection: "row", padding: normalize(10), alignItems: "center",
+                            justifyContent: "space-between", backgroundColor: Color.white, elevation: normalize(9),
+                            position: "absolute", bottom: 0
+                        }}>
+                            <Text style={{
+                                fontSize: normalize(18), color: Color.navyBlue, width: "35%",
+                                fontFamily: "Roboto-Medium", marginLeft: normalize(10)
+                            }}>{`₹${getProductPrice()}`}</Text>
 
 
-                        <TouchableOpacity
-                            disabled={loading}
-                            onPress={() => placeOrder()}
-                            style={{ height: normalize(40), width: "55%", }}>
-                            <ImageBackground
-                                style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
-                                source={ImagePath.gradientButton}
-                                resizeMode="stretch">
+                            <TouchableOpacity
+                                disabled={loading}
+                                onPress={() => {
+                                    if (isCod)
+                                        placeOrder(null)
+                                    else openRazorpay()
+                                }}
+                                style={{ height: normalize(40), width: "55%", }}>
+                                <ImageBackground
+                                    style={{ height: "100%", width: "100%", justifyContent: "center", alignItems: "center" }}
+                                    source={ImagePath.gradientButton}
+                                    resizeMode="stretch">
 
-                                {loading ? <ActivityIndicator size="small" color={Color.white} /> :
-                                    <Text
-                                        style={{
-                                            fontSize: normalize(14),
-                                            fontFamily: "Roboto-Medium",
-                                            color: Color.white,
-                                        }}>PLACE ORDER</Text>}
-                            </ImageBackground>
+                                    {loading ? <ActivityIndicator size="small" color={Color.white} /> :
+                                        <Text
+                                            style={{
+                                                fontSize: normalize(14),
+                                                fontFamily: "Roboto-Medium",
+                                                color: Color.white,
+                                            }}>PLACE ORDER</Text>}
+                                </ImageBackground>
 
-                        </TouchableOpacity>
-                    </View>
-
-
+                            </TouchableOpacity>
+                        </View> : null}
 
                 </View>
             </SafeAreaView>

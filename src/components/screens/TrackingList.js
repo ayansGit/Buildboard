@@ -25,6 +25,37 @@ import { getToken, setToken, } from "../../utils/storage"
 export default function TrackingList(props) {
 
     const [loading, setLoading] = useState(false)
+    const [orderList, setOrderList] = useState([])
+
+    let subs = [];
+    useEffect(() => {
+        // getOrderList()
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            // The screen is focused
+            // Call any action
+            getOrderList()
+        });
+        return unsubscribe
+    }, [props.navigation])
+
+    async function getOrderList() {
+        setLoading(true)
+        try {
+            let token = await getToken()
+            let header = {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + token
+            }
+            let response = await getRequest("user/order/list", header)
+            if (response.success) {
+                console.log("RES", response.data)
+                setOrderList(response.data.reverse())
+            }
+        } catch (error) {
+            alert(error.message)
+        }
+        setLoading(false)
+    }
 
 
     return (
@@ -49,15 +80,18 @@ export default function TrackingList(props) {
 
                     <View style={{ width: "100%", alignItems: "center" }}>
 
+                        {loading ? <ActivityIndicator color={Color.navyBlue} size="large" /> : null}
+
                         <FlatList
                             style={{ width: "100%" }}
-                            data={[1, 2, 3, 4, 5]}
+                            data={orderList}
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={(data) => {
                                 return (
                                     <View style={{
                                         width: "100%", alignItems: "center", paddingBottom: normalize(10),
-                                        borderBottomWidth: normalize(1), borderBottomColor: Color.veryLightGrey, marginTop: normalize(10)
+                                        borderBottomWidth: normalize(1), borderBottomColor: Color.veryLightGrey, marginTop: normalize(10),
+                                        marginBottom: data.index == orderList.length - 1 ? normalize(120) : normalize(0)
                                     }}>
                                         <View style={{
                                             width: "100%", marginTop: normalize(2), paddingStart: "5%", paddingEnd: "2%", paddingBottom: "5%", flexDirection: "row",
@@ -69,27 +103,27 @@ export default function TrackingList(props) {
                                                     borderColor: Color.grey, backgroundColor: Color.white, padding: normalize(3),
                                                 }}
                                                 resizeMode="contain"
-                                                source={ImagePath.dummyProduct} />
+                                                source={{ uri: data.item.product_image }} />
                                             <View style={{ width: "55%", marginLeft: normalize(15) }}>
                                                 <Text style={{
                                                     width: "100%", fontFamily: "Roboto-Medium", fontSize: normalize(12),
                                                     color: Color.black,
                                                 }}
-                                                >{"3 seater mini sofa"}</Text>
+                                                >{data.item.product_name}</Text>
                                                 <Text style={{
                                                     width: "100%", fontFamily: "Roboto-Bold", fontSize: normalize(16),
                                                     color: Color.navyBlue, marginTop: normalize(2)
                                                 }}
-                                                >{`₹30000`}</Text>
+                                                >{`₹${data.item.product_price}`}</Text>
                                                 <Text style={{
                                                     width: "100%", fontFamily: "Roboto-Medium", fontSize: normalize(12),
                                                     color: Color.darkGrey, marginTop: normalize(2)
                                                 }}
-                                                >{`Quantity: ${5}`}</Text>
+                                                >{`Quantity: ${data.item.quantity}`}</Text>
                                             </View>
                                         </View>
                                         {
-                                            ((data.index % 2) != 0) ?
+                                            (data.item.status == "Delivered") ?
                                                 <View style={{ width: "100%", alignItems: "center" }} >
                                                     <Text
                                                         style={{
@@ -99,29 +133,32 @@ export default function TrackingList(props) {
                                                     <Text style={{
                                                         width: "90%", fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                                         color: Color.darkGrey, marginTop: normalize(2)
-                                                    }}>Order Delivered</Text>
+                                                    }}>{data.item.status}</Text>
                                                 </View>
                                                 :
                                                 <View style={{ flexDirection: "row", marginTop: normalize(10) }}>
-                                                    <TouchableOpacity style={{
-                                                        backgroundColor: Color.white, borderRadius: normalize(5),
-                                                        marginRight: normalize(15), elevation: normalize(8),
-                                                        shadowColor: Color.black, shadowOpacity: 0.3, shadowOffset: { height: 0, width: 0 },
-                                                        shadowRadius: normalize(5)
-                                                    }}>
-                                                        <Text style={{
-                                                            fontSize: normalize(10), fontFamily: "Roboto-Regular",
-                                                            color: Color.darkGrey, marginTop: normalize(6), marginBottom: normalize(6),
-                                                            marginLeft: normalize(18), marginRight: normalize(18),
-                                                        }}>CANCEL</Text>
-                                                    </TouchableOpacity>
+
+                                                    {data.item.status == "tt" ?
+                                                        <TouchableOpacity style={{
+                                                            backgroundColor: Color.white, borderRadius: normalize(5),
+                                                            marginRight: normalize(15), elevation: normalize(8),
+                                                            shadowColor: Color.black, shadowOpacity: 0.3, shadowOffset: { height: 0, width: 0 },
+                                                            shadowRadius: normalize(5)
+                                                        }}>
+                                                            <Text style={{
+                                                                fontSize: normalize(10), fontFamily: "Roboto-Regular",
+                                                                color: Color.darkGrey, marginTop: normalize(6), marginBottom: normalize(6),
+                                                                marginLeft: normalize(18), marginRight: normalize(18),
+                                                            }}>CANCEL</Text>
+                                                        </TouchableOpacity> : null}
+
                                                     <TouchableOpacity style={{
                                                         backgroundColor: Color.blue, borderRadius: normalize(5),
                                                         marginLeft: normalize(15), elevation: normalize(8),
                                                         shadowColor: Color.black, shadowOpacity: 0.3, shadowOffset: { height: 0, width: 0 },
                                                         shadowRadius: normalize(5)
                                                     }}
-                                                    onPress = {() => props.navigation.navigate("TrackOrder")}>
+                                                        onPress={() => props.navigation.navigate("TrackOrder", { productDetails: data.item })}>
                                                         <Text style={{
                                                             fontSize: normalize(10), fontFamily: "Roboto-Regular",
                                                             color: Color.white, marginTop: normalize(6), marginBottom: normalize(6),

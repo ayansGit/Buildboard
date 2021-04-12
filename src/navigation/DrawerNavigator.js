@@ -4,6 +4,7 @@ import Home from "../components/screens/Home"
 import Settings from "../components/screens/Settings"
 import DesignWithUs from "../components/screens/DesignWithUs"
 import Order from "../components/screens/Order"
+import CategoryList from "../components/screens/CategoryList"
 import NavigationDrawerMenu from "../components/screens/NavigationDrawerMenu"
 import { Dimensions } from 'react-native';
 
@@ -22,6 +23,7 @@ export default function DrawerNavigator() {
             <Drawer.Screen name="Design With Us" component={DesignWithUs} />
             <Drawer.Screen name="Settings" component={Settings} />
             <Drawer.Screen name="My Orders" component={Order} />
+            <Drawer.Screen name="All Categories" component={CategoryList} />
         </Drawer.Navigator>
     )
 }

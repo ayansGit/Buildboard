@@ -15,9 +15,10 @@ import Header from "../common/Header"
 import normalize from "../../utils/dimen"
 import Color from '../../assets/Color';
 import ImagePath from '../../assets/ImagePath';
-import { getRequest } from "../../utils/apiRequest"
+import { getRequest, postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+import SortModal, { SortType } from "../common/SortModal"
 
 
 
@@ -29,12 +30,18 @@ export default function ProductList(props) {
     const [bannerImg, setBannerImg] = useState("")
     const [products, setProducts] = useState([])
     const [title, setTitle] = useState("")
+    const [viewSort, setViewSort] = useState(false)
 
     useEffect(() => {
         console.log("Cat id: ", props.route.params)
         if (props.route.params != undefined) {
-            setTitle(props.route.params.categoryName)
-            getProductsByCategory(props.route.params.categoryId)
+            if (props.route.params.categoryName != undefined) {
+                setTitle(props.route.params.categoryName)
+                getProductsByCategory(props.route.params.categoryId)
+            } else if (props.route.params.keyword) {
+                getProductsBySearch(props.route.params.keyword)
+            }
+
         } else {
             getProducts()
         }
@@ -64,24 +71,65 @@ export default function ProductList(props) {
         }
     }
 
+    async function getProductsBySearch(keyword) {
+        try {
+            let response = await postRequest("user/search", { keyword: keyword })
+            console.log("RESPONSE", response)
+            setProducts(response.data)
 
-    function renderProductPlaceholder() {
-        return (
-            <SkeletonPlaceholder>
-                <SkeletonPlaceholder.Item
-                    flexDirection="row"
-                    alignItems="center" >
-                    <SkeletonPlaceholder.Item
-                        marginTop={normalize(10)}
-                        marginBottom={normalize(10)}
-                        marginLeft={normalize(12)}
-                        marginRight={normalize(12)}>
-                        <SkeletonPlaceholder.Item
-                        />
-                    </SkeletonPlaceholder.Item>
-                </SkeletonPlaceholder.Item>
-            </SkeletonPlaceholder>
-        )
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+    }
+
+
+    function sortProduct(sortType) {
+        if (products.length > 0) {
+
+            let productArr = products
+            switch (sortType) {
+
+                case SortType.A_TO_Z: {
+                    productArr.sort(dynamicSort("name"))
+                    break
+                }
+
+                case SortType.Z_TO_A: {
+                    productArr.sort(dynamicSort("-name"))
+                    break
+                }
+
+                case SortType.PRICE_HIGHT_TO_LOW: {
+                    productArr.sort(function (product1, product2) { return (product2.price - product1.price) })
+                    break
+
+                }
+
+                case SortType.PRICE_LOW_TO_HIGH: {
+                    productArr.sort(function (product1, product2) { return (product1.price - product2.price) })
+                    break
+                }
+
+            }
+            setProducts(productArr)
+        }
+
+    }
+    function dynamicSort(property) {
+        var sortOrder = 1;
+
+        if (property[0] === "-") {
+            sortOrder = -1;
+            property = property.substr(1);
+        }
+
+        return function (a, b) {
+            if (sortOrder == -1) {
+                return b[property].localeCompare(a[property]);
+            } else {
+                return a[property].localeCompare(b[property]);
+            }
+        }
     }
 
 
@@ -99,7 +147,7 @@ export default function ProductList(props) {
                 padding: normalize(10)
             }}
                 onPress={() => {
-                    props.navigation.navigate("ProductDetail", { productId: data.item.id })
+                    props.navigation.navigate("ProductDetail", { productId: data.item.product_id })
                 }}>
                 <Image
                     style={{ width: "100%", height: normalize(110), borderRadius: normalize(6) }}
@@ -158,13 +206,23 @@ export default function ProductList(props) {
                         onBackPressed={() => {
                             props.navigation.goBack()
                         }} />
+                    <SortModal
+                        visible={viewSort}
+                        onRequestClose={() => setViewSort(false)}
+                        onSortItemSelected={(sortType) => {
+                            setViewSort(false)
+                            console.log("SORT: ", sortType)
+                            sortProduct(sortType)
+
+                        }} />
                     <View style={{ width: "100%", alignItems: "center" }}>
                         <TouchableOpacity style={{
                             width: "90%", height: normalize(45), borderWidth: normalize(1),
                             borderRadius: normalize(25), flexDirection: "row", justifyContent: "space-between",
                             alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
                             marginTop: normalize(10)
-                        }}>
+                        }}
+                            onPress={() => props.navigation.navigate("Search")}>
                             <Text style={{
                                 fontSize: normalize(14), fontFamily: "Roboto-Regular",
                                 color: Color.grey
@@ -179,7 +237,9 @@ export default function ProductList(props) {
                             flexDirection: "row", alignSelf: "flex-end", marginEnd: "5%", marginTop: normalize(10),
                             marginBottom: normalize(10)
                         }}>
-                            <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", padding: normalize(5) }}>
+                            <TouchableOpacity
+                                style={{ flexDirection: "row", alignItems: "center", padding: normalize(5) }}
+                                onPress={() => setViewSort(true)}>
                                 <Image
                                     style={{ height: normalize(12), width: normalize(12), alignItems: "center" }}
                                     resizeMode="contain"
