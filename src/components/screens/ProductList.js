@@ -19,6 +19,7 @@ import { getRequest, postRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import SortModal, { SortType } from "../common/SortModal"
+import NewFilterModal from "../common/NewFilterModal"
 
 
 
@@ -31,6 +32,7 @@ export default function ProductList(props) {
     const [products, setProducts] = useState([])
     const [title, setTitle] = useState("")
     const [viewSort, setViewSort] = useState(false)
+    const [viewFilter, setViewFilter] = useState(false)
 
     useEffect(() => {
         console.log("Cat id: ", props.route.params)
@@ -215,6 +217,11 @@ export default function ProductList(props) {
                             sortProduct(sortType)
 
                         }} />
+
+                    <NewFilterModal
+                        visible={viewFilter}
+                        onRequestClose={() => setViewFilter(false)}
+                    />
                     <View style={{ width: "100%", alignItems: "center" }}>
                         <TouchableOpacity style={{
                             width: "90%", height: normalize(45), borderWidth: normalize(1),
@@ -246,7 +253,9 @@ export default function ProductList(props) {
                                     source={ImagePath.sort} />
                                 <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Medium", color: Color.darkGrey }}>Sort</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", padding: normalize(5) }}>
+                            <TouchableOpacity
+                                onPress={() => setViewFilter(true)}
+                                style={{ flexDirection: "row", alignItems: "center", padding: normalize(5) }}>
                                 <Image
                                     style={{ height: normalize(14), width: normalize(14), }}
                                     resizeMode="contain"
