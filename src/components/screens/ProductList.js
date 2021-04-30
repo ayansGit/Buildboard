@@ -33,6 +33,8 @@ export default function ProductList(props) {
     const [title, setTitle] = useState("")
     const [viewSort, setViewSort] = useState(false)
     const [viewFilter, setViewFilter] = useState(false)
+    const [keyword, setKeyword] = useState("")
+    const [catId, setCatId] = useState(-1)
 
     useEffect(() => {
         console.log("Cat id: ", props.route.params)
@@ -63,6 +65,7 @@ export default function ProductList(props) {
     }
 
     async function getProductsByCategory(id) {
+        setCatId(id)
         try {
             let response = await getRequest(`user/category/${id}/products`)
             console.log("RESPONSE", response)
@@ -74,8 +77,44 @@ export default function ProductList(props) {
     }
 
     async function getProductsBySearch(keyword) {
+        setKeyword(keyword)
         try {
             let response = await postRequest("user/search", { keyword: keyword })
+            console.log("RESPONSE", response)
+            setProducts(response.data)
+
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+    }
+
+    async function clearFilter(){
+    
+        if(keyword.length>0){
+            try {
+                let response = await postRequest("user/search", { keyword: keyword })
+                console.log("RESPONSE", response)
+                setProducts(response.data)
+    
+            } catch (error) {
+                console.log("ERROR", error)
+            }
+        }else if(catId!= -1){
+            getProductsByCategory(catId)
+        }else{
+            getProducts()
+        }
+       
+    }
+
+    async function getProductsByFilter(value) {
+        let request = value
+        // if(keyword.length > 0){
+        //     request.keyword = keyword
+        // }
+        request.keyword = keyword
+        try {
+            let response = await postRequest("user/search", request)
             console.log("RESPONSE", response)
             setProducts(response.data)
 
@@ -221,6 +260,14 @@ export default function ProductList(props) {
                     <NewFilterModal
                         visible={viewFilter}
                         onRequestClose={() => setViewFilter(false)}
+                        clearFilter = {() => {
+                            setViewFilter(false)
+                            clearFilter()
+                        }}
+                        onFilterApply = {(value) => {
+                            setViewFilter(false)
+                            getProductsByFilter(value)
+                        }}
                     />
                     <View style={{ width: "100%", alignItems: "center" }}>
                         <TouchableOpacity style={{

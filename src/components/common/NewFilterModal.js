@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux"
 import { View, Text, Modal, TouchableOpacity, FlatList, Platform, SafeAreaView, Image } from "react-native";
 import PropTypes from "prop-types";
 import Colors from "../../assets/Color"
@@ -11,6 +12,7 @@ import FilterCategoryItem from "./FilterCategoryItem"
 import FilterColorItem from "./FilterColorItem"
 import { getRequest } from "../../utils/apiRequest"
 import { Checkbox } from "react-native-paper"
+import { addFilteredCategory, addFilteredColor } from "../../actions/ProductAction"
 
 
 const sortParameter = [
@@ -39,14 +41,19 @@ const sortParameter = [
 
 var categoryCalled = false
 var colorCalled = false
+var filterRequest = {}
 
 function NewFilterModal(props) {
 
+    const dispatch = useDispatch()
+    const categoryList = useSelector(state => state.product.filterCategory)
+    const colorList = useSelector(state => state.product.filterColor)
 
     const [selectedPos, setSelectedPos] = useState(0)
     const [discount, setDiscount] = useState(false)
-    const [categoryList, setCategoryList] = useState([])
-    const [colorList, setColorList] = useState([])
+    // const [categoryList, setCategoryList] = useState([])
+    // const [colorList, setColorList] = useState([])
+
 
     if (!categoryCalled) {
         getCategoryList()
@@ -56,12 +63,14 @@ function NewFilterModal(props) {
     async function getCategoryList() {
         try {
             let categoryResp = await getRequest("user/category")
-            let colorResp = await getRequest("user/colors")
-            console.log("RESPONSE", categoryResp)
-            console.log("RESPONSE", colorResp)
+            let categoryList = categoryResp.data
+            categoryList.forEach((value, index) => {
+                value.isChecked = false
+                return value
+            });
+            console.log("CATEGORY", categoryList)
             categoryCalled = true
-            setCategoryList(categoryResp.data)
-            setColorList(colorResp.data)
+            dispatch(addFilteredCategory({ categoryList: categoryList, id: -1 }))
 
         } catch (error) {
             console.log("ERROR", error)
@@ -73,13 +82,40 @@ function NewFilterModal(props) {
         try {
             let colorResp = await getRequest("user/colors")
             console.log("RESPONSE", colorResp)
+            let colorList = colorResp.data
+            // colorList.forEach((value, index) => {
+            //     value.isChecked = false
+            //     return value
+            // });
             colorCalled = true
-            setColorList(colorResp.data)
+            dispatch(addFilteredColor(colorList))
 
         } catch (error) {
             console.log("ERROR", error)
             colorCalled = false
         }
+    }
+
+    function selectCategory(position, id) {
+        let categoryArr = categoryList
+        categoryArr.forEach((value, index) => {
+            if (position == index)
+                value.isChecked = !value.isChecked
+            else value.isChecked = false
+            return value
+        });
+        filterRequest.category_id = id
+        dispatch(addFilteredCategory({ categoryList: categoryList, id: id }))
+    }
+
+    function clearFilter(){
+        let categoryArr = categoryList
+        categoryArr.forEach((value, index) => {
+            value.isChecked = false
+            return value
+        });
+        filterRequest = {}
+        dispatch(addFilteredCategory({ categoryList: categoryList, id: -1 }))
     }
 
     return (
@@ -98,21 +134,37 @@ function NewFilterModal(props) {
 
                 <View style={{ flex: 1, alignItems: "center", backgroundColor: Colors.white }}>
 
-                    <View style={{ width: "100%", height: "8%", flexDirection: "row", alignItems: "center", paddingStart: normalize(10) }}>
+                    <View style={{ width: "100%", height: "8%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingStart: normalize(10) }}>
+                        <View style={{ flexDirection: "row" }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if (props.onRequestClose) {
+                                        props.onRequestClose()
+                                    }
+                                }}>
+                                <Image
+                                    style={{ width: normalize(10), height: normalize(10), margin: normalize(5) }}
+                                    source={ImagePath.close} />
+                            </TouchableOpacity>
+                            <Text style={{
+                                fontFamily: "Roboto-Regular", fontSize: normalize(12),
+                                color: Color.navyBlue, marginLeft: normalize(10)
+                            }}>Filter</Text>
+                        </View>
+
                         <TouchableOpacity
                             onPress={() => {
-                                if (props.onRequestClose) {
-                                    props.onRequestClose()
+                                clearFilter()
+                                if (props.clearFilter) {
+                                    props.clearFilter()
                                 }
                             }}>
-                            <Image
-                                style={{ width: normalize(10), height: normalize(10), margin: normalize(5) }}
-                                source={ImagePath.close} />
+                            <Text style={{
+                                fontFamily: "Roboto-Regular", fontSize: normalize(12),
+                                color: Color.navyBlue, marginLeft: normalize(10), marginRight: normalize(10)
+                            }}>Clear</Text>
                         </TouchableOpacity>
-                        <Text style={{
-                            fontFamily: "Roboto-Regular", fontSize: normalize(12),
-                            color: Color.navyBlue, marginLeft: normalize(10)
-                        }}>Filter</Text>
+
                     </View>
 
                     <View style={{ width: "100%", height: "84%", flexDirection: "row" }}>
@@ -150,7 +202,14 @@ function NewFilterModal(props) {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                onPress={() => setDiscount(!discount)}
+                                onPress={() => {
+                                    if (!discount) {
+                                        filterRequest.discount = "discount"
+                                    } else {
+                                        delete filterRequest.discount
+                                    }
+                                    setDiscount(!discount)
+                                }}
                                 style={{ marginTop: normalize(10), flexDirection: "row", alignItems: "center" }}>
                                 <Checkbox status={discount ? "checked" : "unchecked"} />
                                 <Text style={{
@@ -169,7 +228,9 @@ function NewFilterModal(props) {
                                     style={{ width: "100%" }}
                                     keyExtractor={(item, index) => index.toString()}
                                     renderItem={(data) => {
-                                        return (<FilterCategoryItem data={data.item} />)
+                                        return (<FilterCategoryItem
+                                            onChecked={() => selectCategory(data.index, data.item.id)}
+                                            data={data.item} />)
                                     }} /> : selectedPos == 1 ?
                                     <FlatList
                                         data={colorList}
@@ -178,28 +239,33 @@ function NewFilterModal(props) {
                                         renderItem={(data) => {
                                             return (<FilterColorItem color={data.item} />)
                                         }} /> :
-                                    <View style = {{width: "100%",}}>
+                                    <View style={{ width: "100%", }}>
                                     </View>}
 
-
                         </View>
-
                     </View>
+
                     <View style={{ width: "100%", height: "8%", flexDirection: "row" }}>
                         <TouchableOpacity
-                        onPress = {() => {
-                            if (props.onRequestClose) {
-                                props.onRequestClose()
-                            }
-                        }}
-                         style={{ width: "40%", height: "100%", justifyContent: "center", alignItems: "center" }}>
+                            onPress={() => {
+                                if (props.onRequestClose) {
+                                    props.onRequestClose()
+                                }
+                            }}
+                            style={{ width: "40%", height: "100%", justifyContent: "center", alignItems: "center" }}>
                             <Text style={{
                                 fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                 color: Color.darkGrey
                             }}>CLOSE</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={{ width: "60%", height: "100%", backgroundColor: Color.navyBlue, justifyContent: "center", alignItems: "center" }}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (props.onFilterApply)
+                                    props.onFilterApply(filterRequest)
+                                console.log('FILTER_REQ', filterRequest)
+                            }}
+                            style={{ width: "60%", height: "100%", backgroundColor: Color.navyBlue, justifyContent: "center", alignItems: "center" }}>
                             <Text style={{
                                 fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                 color: Color.white
@@ -234,7 +300,9 @@ NewFilterModal.propTypes = {
 
     visible: PropTypes.bool,
     onSortItemSelected: PropTypes.func,
-    onRequestClose: PropTypes.func
+    onRequestClose: PropTypes.func,
+    onFilterApply: PropTypes.func,
+    clearFilter: PropTypes.func,
 
 };
 
@@ -242,5 +310,7 @@ NewFilterModal.defaultProps = {
 
     visible: false,
     onSortItemSelected: null,
-    onRequestClose: null
+    onRequestClose: null,
+    onFilterApply: null,
+    clearFilter: null,
 };

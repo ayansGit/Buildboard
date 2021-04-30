@@ -25,6 +25,7 @@ export const getRequest = async (url, header = { "Content-Type": "application/js
 }
 
 export const postRequest = async (url, param, header = { "Content-Type": "application/json" }) => {
+    console.log("url", `${BASE_URL}/${url}`)
     console.log("Param", param)
     console.log("header", header)
     let connection = (await NetInfo.fetch())

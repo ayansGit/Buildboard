@@ -131,7 +131,7 @@ export default function Search(props) {
                                 returnKeyType="search"
                                 onSubmitEditing={() => {
                                     //getProducts(keyword)
-                                    props.navigation.navigate("ProductList", { keyword: keyword })
+                                    props.navigation.push("ProductList", { keyword: keyword })
                                 }}
                                 onChangeText={(text) => {
                                     setKeyword(text)
