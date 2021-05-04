@@ -13,6 +13,8 @@ import FilterColorItem from "./FilterColorItem"
 import { getRequest } from "../../utils/apiRequest"
 import { Checkbox } from "react-native-paper"
 import { addFilteredCategory, addFilteredColor } from "../../actions/ProductAction"
+import Slider from "@react-native-community/slider"
+import RangeSlider from 'rn-range-slider';
 
 
 const sortParameter = [
@@ -47,12 +49,15 @@ function NewFilterModal(props) {
 
     const dispatch = useDispatch()
     const categoryList = useSelector(state => state.product.filterCategory)
-    const colorList = useSelector(state => state.product.filterColor)
+    // const colorList = useSelector(state => state.product.filterColor)
 
     const [selectedPos, setSelectedPos] = useState(0)
     const [discount, setDiscount] = useState(false)
+    const [minPrice, setminPrice] = useState(1000)
+    const [maxPrice, setmaxPrice] = useState(0)
     // const [categoryList, setCategoryList] = useState([])
-    // const [colorList, setColorList] = useState([])
+    const [colorList, setColorList] = useState([])
+    const [selectedColor, setSelectedColor] = useState(-1)
 
 
     if (!categoryCalled) {
@@ -88,7 +93,8 @@ function NewFilterModal(props) {
             //     return value
             // });
             colorCalled = true
-            dispatch(addFilteredColor(colorList))
+            setColorList(colorList)
+            // dispatch(addFilteredColor(colorList))
 
         } catch (error) {
             console.log("ERROR", error)
@@ -104,16 +110,19 @@ function NewFilterModal(props) {
             else value.isChecked = false
             return value
         });
+        filterRequest = {}
         filterRequest.category_id = id
         dispatch(addFilteredCategory({ categoryList: categoryList, id: id }))
     }
 
-    function clearFilter(){
+    function clearFilter() {
         let categoryArr = categoryList
         categoryArr.forEach((value, index) => {
             value.isChecked = false
             return value
         });
+        setmaxPrice(0)
+        setSelectedColor(-1)
         filterRequest = {}
         dispatch(addFilteredCategory({ categoryList: categoryList, id: -1 }))
     }
@@ -203,6 +212,7 @@ function NewFilterModal(props) {
 
                             <TouchableOpacity
                                 onPress={() => {
+                                    filterRequest = {}
                                     if (!discount) {
                                         filterRequest.discount = "discount"
                                     } else {
@@ -237,9 +247,41 @@ function NewFilterModal(props) {
                                         style={{ width: "100%" }}
                                         keyExtractor={(item, index) => index.toString()}
                                         renderItem={(data) => {
-                                            return (<FilterColorItem color={data.item} />)
+                                            return (<FilterColorItem color={data.item}
+                                                isChecked={selectedColor == data.index}
+                                                onChecked={() => {
+                                                    filterRequest = {}
+                                                    filterRequest.color = data.item
+                                                    setSelectedColor(data.index)
+                                                }} />)
                                         }} /> :
-                                    <View style={{ width: "100%", }}>
+                                    <View style={{ width: "100%", alignItems: "center" }}>
+                                        <Slider
+                                            style={{ width: normalize(180), height: normalize(40), marginTop: normalize(50) }}
+                                            minimumValue={1000}
+                                            maximumValue={100000}
+                                            step={5000}
+                                            onValueChange={(value) => {
+                                                setmaxPrice(value)
+                                                filterRequest = {}
+                                                filterRequest.min_price = minPrice
+                                                filterRequest.max_price = value
+                                            }}
+                                        />
+                                        <View style={{ width: "100%", flexDirection: "row", justifyContent: "space-between" }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(10),
+                                                color: Color.darkGrey, margin: normalize(10)
+                                            }}>₹ 1000</Text>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(10),
+                                                color: Color.darkGrey, margin: normalize(10)
+                                            }}>{`₹ ${maxPrice}`}</Text>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(10),
+                                                color: Color.darkGrey, margin: normalize(10)
+                                            }}>₹ 100000</Text>
+                                        </View>
                                     </View>}
 
                         </View>
