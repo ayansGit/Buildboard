@@ -20,7 +20,7 @@ import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersiv
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
 import AddressDialog from "../common/AddressDialog"
-import { getToken, getAddress } from "../../utils/storage";
+import { getToken, getAddress, setUserName, setEmail } from "../../utils/storage";
 
 export default function Account(props) {
 
@@ -30,7 +30,7 @@ export default function Account(props) {
         phone: "",
         full_name: "",
         email: "",
-        address: ""
+        // address: ""
     })
 
 
@@ -39,14 +39,14 @@ export default function Account(props) {
         const unsubscribe = props.navigation.addListener('focus', () => {
             // The screen is focused
             // Call any action
-            getAccount()
+            initialize()
         });
         return unsubscribe
     }, [props.navigation])
 
 
 
-    async function getAccount() {
+    async function initialize() {
 
         setLoading(true)
         try {
@@ -66,8 +66,8 @@ export default function Account(props) {
             let response = await getRequest("user/profile", header)
             console.log(TAG, "-> Account Response: ", JSON.stringify(response))
             setAccount({
-                address: (addressVal != null && addressVal != undefined && addressVal.length > 0) ? addressVal: "",
-                phone: response.data.phone,
+                // address: (addressVal != null && addressVal != undefined && addressVal.length > 0) ? addressVal: "",
+                phone: response.data.phone.toString(),
                 full_name: response.data.full_name,
                 email: response.data.email,
             })
@@ -103,6 +103,7 @@ export default function Account(props) {
                         <ScrollView style={{ width: "100%", height: "100%" }}>
                             <View style={{ width: "100%", alignItems: "center" }}>
                                 <TouchableOpacity
+                                    onPress={() => props.navigation.navigate("AccountUpdate", { userData: account })}
                                     disabled={loading}
                                     style={{
                                         width: "90%", flexDirection: "row", borderRadius: normalize(4),
@@ -126,6 +127,7 @@ export default function Account(props) {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
+                                    onPress={() => props.navigation.navigate("AccountUpdate", { userData: account })}
                                     disabled={loading}
                                     style={{
                                         width: "90%", flexDirection: "row", borderRadius: normalize(4),
@@ -149,6 +151,7 @@ export default function Account(props) {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
+                                    onPress={() => props.navigation.navigate("AccountUpdate", { userData: account })}
                                     disabled={loading}
                                     style={{
                                         width: "90%", flexDirection: "row", borderRadius: normalize(4),

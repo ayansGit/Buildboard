@@ -18,6 +18,7 @@ import FAQ from "../components/screens/FAQ"
 import GstForm from "../components/screens/GstForm"
 import Wishlist from "../components/screens/Wishlist"
 import Search from "../components/screens/Search.js"
+import AccountUpdate from "../components/screens/AccountUpdate"
 
 const Stack = createStackNavigator();
 
@@ -32,6 +33,7 @@ export default function SignedInNavigator() {
         <Stack.Screen name="ContactUs" component = {ContactUs}/>
         <Stack.Screen name="Cart" component = {Cart}/>
         <Stack.Screen name="Account" component = {Account}/>
+        <Stack.Screen name="AccountUpdate" component = {AccountUpdate}/>
         <Stack.Screen name="AddressList" component = {AddressList}/>
         <Stack.Screen name="Address" component = {Address}/>
         <Stack.Screen name="TrackingList" component = {TrackingList}/>

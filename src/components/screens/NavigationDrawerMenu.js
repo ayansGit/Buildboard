@@ -18,7 +18,12 @@ export default function NavigationDrawerMenu(props) {
     const [isSignIn, setSignIn] = useState(false)
 
     useEffect(() => {
-        getUserDetails()
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            // The screen is focused
+            // Call any action
+            getUserDetails()
+        });
+        return unsubscribe
     }, [])
 
 

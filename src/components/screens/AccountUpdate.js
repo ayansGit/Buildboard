@@ -25,16 +25,17 @@ import ViewPager from '@react-native-community/viewpager';
 import AddressDialog from "../common/AddressDialog"
 import { RadioButton, FAB } from 'react-native-paper';
 import Picker from "../common/StatePicker"
-import { getToken } from "../../utils/storage";
+import { getToken, setUserName, setEmail } from "../../utils/storage";
 
 export default function Address(props) {
 
     const [loading, setLoading] = React.useState(0);
-    const states = useSelector(state => state.user.stateList)
 
     const [accountRequest, setAccountRequest] = useState({
+        phone: "",
         full_name: "",
-        
+        email: "",
+
     })
 
     useEffect(() => {
@@ -42,30 +43,19 @@ export default function Address(props) {
         const unsubscribe = props.navigation.addListener('focus', () => {
             // The screen is focused
             // Call any action
-            initAddress()
+            initAccount()
         });
         return unsubscribe
     }, [props.navigation])
 
-    function initAddress() {
-        if (props.route.params.forUpdate) {
-            let address = props.route.params.addressDetails
-            setAccountRequest({
-                ...accountRequest,
-                full_name: address.full_name,
-                pincode: address.pincode,
-                house_number: address.house_number,
-                area: address.area,
-                phone: address.phone,
-                landmark: address.landmark,
-                city: address.city,
-                state_id: address.state_id
-            })
-        } else
-            setAccountRequest({
-                ...accountRequest,
-                state_id: states[0].state_id
-            })
+    function initAccount() {
+        let accountDetails = props.route.params.userData
+        setAccountRequest({
+            ...accountRequest,
+            full_name: accountDetails.full_name,
+            phone: accountDetails.phone,
+            email: accountDetails.email
+        })
     }
 
 
@@ -77,20 +67,16 @@ export default function Address(props) {
             alert(message)
         }
     }
-    async function addAddress(params) {
+    async function updateProfile() {
 
-        if (accountRequest.full_name.length == 0) {
-            showAlert("Enter fullname")
-        } else if (accountRequest.pincode.length == 0) {
-            showAlert("Enter pincode")
-        } else if (accountRequest.house_number.length == 0) {
-            showAlert("Enter house number")
-        } else if (accountRequest.area.length == 0) {
-            showAlert("Enter street name")
-        } else if (accountRequest.phone.length == 0) {
+        if (accountRequest.phone.length == 0) {
             showAlert("Enter mobile number")
-        } else if (accountRequest.city.length == 0) {
-            showAlert("Enter city or district")
+        } else if (accountRequest.phone.length < 10) {
+            showAlert("Enter valid mobile number")
+        } else if (accountRequest.full_name.length == 0) {
+            showAlert("Enter fullname")
+        } else if (accountRequest.email.length == 0) {
+            showAlert("Enter email")
         } else {
             try {
                 setLoading(true)
@@ -100,23 +86,15 @@ export default function Address(props) {
                     "Authorization": "Bearer " + token
                 }
 
-                let urlKey = props.route.params.forUpdate ? "update" : "store"
-
-                let request = {}
-                if(props.route.params.forUpdate){
-                    request = accountRequest
-                    request.id = props.route.params.addressDetails.id
-                }else{
-                    request = accountRequest
-                }
-
-                let response =  await postRequest(`user/address/${urlKey}`, request, header)
+                let response = await postRequest(`user/profile/update`, accountRequest, header)
                 console.log("RESPOSNE", response)
                 if (response.success) {
+                    setUserName(accountRequest.full_name.toString())
+                    setEmail(accountRequest.email.toString())
                     if (Platform.OS == "android") {
-                        ToastAndroid.show("Address added successfully", ToastAndroid.SHORT)
+                        ToastAndroid.show(response.message, ToastAndroid.SHORT)
                     } else {
-                        alert("Address added successfully")
+                        alert(response.message)
                     }
                     props.navigation.goBack()
                 } else if (Array.isArray(response.message)) {
@@ -168,11 +146,40 @@ export default function Address(props) {
                                 }}>
                                     <TextInput
                                         editable={!loading}
+                                        value={accountRequest.phone}
+                                        placeholder={"Mobile number"}
+                                        maxLength={10}
+                                        numberOfLines={1}
+                                        keyboardType="numeric"
+                                        returnKeyType="next"
+                                        placeholderTextColor={Color.grey}
+                                        style={{
+                                            width: "95%",
+                                            fontFamily: "Roboto-Regular", color: Color.darkGrey,
+                                            fontSize: normalize(14)
+                                        }}
+                                        onChangeText={(text) => {
+                                            setAccountRequest({
+                                                ...accountRequest,
+                                                phone: text
+                                            })
+                                        }} />
+                                </View>
+
+                                <View style={{
+                                    width: "90%", height: normalize(45), borderWidth: normalize(1),
+                                    borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
+                                    alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
+                                    marginTop: normalize(20)
+                                }}>
+                                    <TextInput
+                                        editable={!loading}
                                         value={accountRequest.full_name}
                                         placeholder={"Full Name"}
                                         textContentType="name"
                                         numberOfLines={1}
                                         returnKeyType="next"
+                                        keyboardType="default"
                                         placeholderTextColor={Color.grey}
                                         style={{
                                             width: "95%",
@@ -187,9 +194,37 @@ export default function Address(props) {
                                         }} />
                                 </View>
 
+                                <View style={{
+                                    width: "90%", height: normalize(45), borderWidth: normalize(1),
+                                    borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
+                                    alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
+                                    marginTop: normalize(20)
+                                }}>
+                                    <TextInput
+                                        editable={!loading}
+                                        value={accountRequest.email}
+                                        placeholder={"Email"}
+                                        textContentType="emailAddress"
+                                        keyboardType="email-address"
+                                        numberOfLines={1}
+                                        returnKeyType="done"
+                                        placeholderTextColor={Color.grey}
+                                        style={{
+                                            width: "95%",
+                                            fontFamily: "Roboto-Regular", color: Color.darkGrey,
+                                            fontSize: normalize(14)
+                                        }}
+                                        onChangeText={(text) => {
+                                            setAccountRequest({
+                                                ...accountRequest,
+                                                email: text
+                                            })
+                                        }} />
+                                </View>
+
                                 <TouchableOpacity
                                     disabled={loading}
-                                    onPress={() => { addAddress() }}
+                                    onPress={() => { updateProfile() }}
                                     style={{
                                         width: "90%", height: normalize(45), marginTop: normalize(20),
                                         marginBottom: normalize(80)
