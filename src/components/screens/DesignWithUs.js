@@ -97,7 +97,7 @@ export default function DesignWithUs(props) {
             }
 
             // console.log('COUNT: ', count)
-        }, 2000);
+        }, 10000);
     }
 
     async function request() {

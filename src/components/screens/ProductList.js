@@ -35,11 +35,13 @@ export default function ProductList(props) {
     const [viewFilter, setViewFilter] = useState(false)
     const [keyword, setKeyword] = useState("")
     const [catId, setCatId] = useState(-1)
+    const [showFilterOption, setShowFilterOption] = useState(true)
 
     useEffect(() => {
         console.log("Cat id: ", props.route.params)
         if (props.route.params != undefined) {
             if (props.route.params.categoryName != undefined) {
+                setShowFilterOption(false)
                 setTitle(props.route.params.categoryName)
                 getProductsByCategory(props.route.params.categoryId)
             } else if (props.route.params.keyword) {
@@ -88,23 +90,23 @@ export default function ProductList(props) {
         }
     }
 
-    async function clearFilter(){
-    
-        if(keyword.length>0){
+    async function clearFilter() {
+
+        if (keyword.length > 0) {
             try {
                 let response = await postRequest("user/search", { keyword: keyword })
                 console.log("RESPONSE", response)
                 setProducts(response.data)
-    
+
             } catch (error) {
                 console.log("ERROR", error)
             }
-        }else if(catId!= -1){
+        } else if (catId != -1) {
             getProductsByCategory(catId)
-        }else{
+        } else {
             getProducts()
         }
-       
+
     }
 
     async function getProductsByFilter(value) {
@@ -260,11 +262,11 @@ export default function ProductList(props) {
                     <NewFilterModal
                         visible={viewFilter}
                         onRequestClose={() => setViewFilter(false)}
-                        clearFilter = {() => {
+                        clearFilter={() => {
                             setViewFilter(false)
                             clearFilter()
                         }}
-                        onFilterApply = {(value) => {
+                        onFilterApply={(value) => {
                             setViewFilter(false)
                             getProductsByFilter(value)
                         }}
@@ -280,7 +282,7 @@ export default function ProductList(props) {
                             <Text style={{
                                 fontSize: normalize(14), fontFamily: "Roboto-Regular",
                                 color: Color.grey
-                            }}>Search</Text>
+                            }}>{keyword}</Text>
                             <Image
                                 style={{ width: normalize(20), height: normalize(20) }}
                                 source={ImagePath.search}
@@ -300,15 +302,17 @@ export default function ProductList(props) {
                                     source={ImagePath.sort} />
                                 <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Medium", color: Color.darkGrey }}>Sort</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => setViewFilter(true)}
-                                style={{ flexDirection: "row", alignItems: "center", padding: normalize(5) }}>
-                                <Image
-                                    style={{ height: normalize(14), width: normalize(14), }}
-                                    resizeMode="contain"
-                                    source={ImagePath.filter} />
-                                <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Medium", color: Color.darkGrey, }}>Filter</Text>
-                            </TouchableOpacity>
+                            {showFilterOption ?
+                                <TouchableOpacity
+                                    onPress={() => setViewFilter(true)}
+                                    style={{ flexDirection: "row", alignItems: "center", padding: normalize(5) }}>
+                                    <Image
+                                        style={{ height: normalize(14), width: normalize(14), }}
+                                        resizeMode="contain"
+                                        source={ImagePath.filter} />
+                                    <Text style={{ fontSize: normalize(12), fontFamily: "Roboto-Medium", color: Color.darkGrey, }}>Filter</Text>
+                                </TouchableOpacity> : null}
+
                         </View>
                         <FlatList
                             style={{ width: "100%", }}

@@ -103,6 +103,7 @@ function NewFilterModal(props) {
     }
 
     function selectCategory(position, id) {
+        clearFilter()
         let categoryArr = categoryList
         categoryArr.forEach((value, index) => {
             if (position == index)
@@ -121,6 +122,7 @@ function NewFilterModal(props) {
             value.isChecked = false
             return value
         });
+        setDiscount(false)
         setmaxPrice(0)
         setSelectedColor(-1)
         filterRequest = {}
@@ -212,7 +214,8 @@ function NewFilterModal(props) {
 
                             <TouchableOpacity
                                 onPress={() => {
-                                    filterRequest = {}
+                                    // filterRequest = {}
+                                    clearFilter()
                                     if (!discount) {
                                         filterRequest.discount = "discount"
                                     } else {
@@ -224,8 +227,8 @@ function NewFilterModal(props) {
                                 <Checkbox status={discount ? "checked" : "unchecked"} />
                                 <Text style={{
                                     fontFamily: "Roboto-Medium", fontSize: normalize(10),
-                                    color: Color.darkGrey, textAlign: "center"
-                                }}>{"Product with \n Discount"}</Text>
+                                    color: Color.darkGrey, textAlign: "center", marginLeft: normalize(5)
+                                }}>{"Discounts"}</Text>
                             </TouchableOpacity>
 
                         </View>
@@ -250,7 +253,8 @@ function NewFilterModal(props) {
                                             return (<FilterColorItem color={data.item}
                                                 isChecked={selectedColor == data.index}
                                                 onChecked={() => {
-                                                    filterRequest = {}
+                                                    // filterRequest = {}
+                                                    clearFilter()
                                                     filterRequest.color = data.item
                                                     setSelectedColor(data.index)
                                                 }} />)
@@ -261,7 +265,9 @@ function NewFilterModal(props) {
                                             minimumValue={1000}
                                             maximumValue={100000}
                                             step={5000}
+                                            value = {maxPrice}
                                             onValueChange={(value) => {
+                                                clearFilter()
                                                 setmaxPrice(value)
                                                 filterRequest = {}
                                                 filterRequest.min_price = minPrice

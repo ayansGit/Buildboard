@@ -110,7 +110,7 @@ export default function Home(props) {
             }
 
             // console.log('COUNT: ', count)
-        }, 2000);
+        }, 10000);
     }
 
     async function getNewArrivalProducts() {

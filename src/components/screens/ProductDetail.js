@@ -37,7 +37,7 @@ export default function ProductDetail(props) {
     const contentWidth = useWindowDimensions().width;
 
     const scrollViewRef = useRef()
-    
+
     const [isSignedIn, setSignedIn] = useState(false)
     const [loading, setLoading] = useState(false)
     const [loadImage, setLoadImage] = useState(false)
@@ -284,7 +284,7 @@ export default function ProductDetail(props) {
                             props.navigation.goBack()
                         }} />
                     <KeyboardAvoidingView
-                        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
                         style={{ flex: 1, width: "100%", alignItems: "center" }}>
 
                         <ScrollView
@@ -296,32 +296,27 @@ export default function ProductDetail(props) {
 
                                 {product ?
                                     <View style={{
-                                        width: "90%", height: normalize(200), alignSelf: "center",
+                                        width: "90%", alignSelf: "center",
                                         elevation: normalize(8), shadowColor: Color.black, shadowOpacity: 0.3,
                                         shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
                                         backgroundColor: Color.white, marginTop: normalize(15), marginBottom: normalize(20)
                                     }}>
                                         {productImages.length > 0 ?
                                             <ViewPager
-                                                pageMargin={normalize(5)}
-                                                initialPage={0}
-                                                style={{
-                                                    width: "100%", height: "100%", backgroundColor: Color.white
-                                                }}>
-
+                                                pageMargin={normalize(10)}
+                                                style={{ width: "100%", height: normalize(200), marginTop: normalize(5) }}>
                                                 {productImages.map((value, index) => {
+                                                    console.log("ll", value)
                                                     return (
-                                                        <View
-                                                            collapsable={false}
+                                                        <TouchableOpacity
+                                                            onPress={() => props.navigation.navigate("ProductImage", { productImages: productImages })}
                                                             key={index}
-                                                            style={{
-                                                                flex: 1, alignItems: "center", alignSelf: "center",
-                                                            }}>
+                                                            style={{ width: "100%", height: "100%", marginTop: normalize(10) }}>
                                                             <Image
+                                                                resizeMode="contain"
                                                                 style={{ width: "100%", height: "100%", }}
-                                                                source={{ uri: value }}
-                                                                resizeMode="contain" />
-                                                        </View>
+                                                                source={{ uri: value }} />
+                                                        </TouchableOpacity>
                                                     )
                                                 })}
 

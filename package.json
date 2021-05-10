@@ -28,6 +28,7 @@
     "react-native-device-info": "^8.0.6",
     "react-native-gesture-handler": "^1.9.0",
     "react-native-get-random-values": "^1.6.0",
+    "react-native-image-pan-zoom": "^2.1.12",
     "react-native-paper": "^4.7.1",
     "react-native-razorpay": "^2.2.4",
     "react-native-reanimated": "^1.13.2",

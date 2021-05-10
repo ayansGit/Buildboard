@@ -130,8 +130,8 @@ export default function Login(props) {
                     </TouchableOpacity>
 
                     <View style={{
-                        flexDirection: "row", justifyContent: "center", position: "absolute",
-                        bottom: normalize(25), alignItems: "center"
+                        flexDirection: "row", justifyContent: "center",
+                        marginTop: normalize(25), alignItems: "center"
                     }}>
                         <Text style={{
                             fontFamily: "Roboto-Regular", fontSize: normalize(14),

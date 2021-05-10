@@ -19,6 +19,7 @@ import GstForm from "../components/screens/GstForm"
 import Wishlist from "../components/screens/Wishlist"
 import Search from "../components/screens/Search.js"
 import AccountUpdate from "../components/screens/AccountUpdate"
+import ProductImage from "../components/screens/ProductImage"
 
 const Stack = createStackNavigator();
 
@@ -29,6 +30,7 @@ export default function SignedInNavigator() {
         <Stack.Screen name="ProductList" component = {ProductList}/>
         <Stack.Screen name="ProductDetail" component = {ProductDetail}/>
         <Stack.Screen name="ProductDescription" component = {ProductDescription}/>
+        <Stack.Screen name="ProductImage" component = {ProductImage}/>
         {/* <Stack.Screen name="CategoryList" component = {CategoryList}/> */}
         <Stack.Screen name="ContactUs" component = {ContactUs}/>
         <Stack.Screen name="Cart" component = {Cart}/>
