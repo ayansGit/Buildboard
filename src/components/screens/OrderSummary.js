@@ -254,7 +254,7 @@ export default function OrderSummary(props) {
         let phone = await getPhone()
         var options = {
             description: 'Order price',
-            image: ImagePath.chooseIcon,
+            image: "https://buildboard-furnishers.web.app/assets/images/logo.png",
             currency: 'INR',
             key: 'rzp_test_NIv9pU24SLVgtS',
             amount: `${(getProductPrice()) * 100}`,

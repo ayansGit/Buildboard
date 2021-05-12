@@ -21,6 +21,7 @@ import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import ViewPager from '@react-native-community/viewpager';
 import { getToken, setToken, } from "../../utils/storage"
 import { withNavigationFocus } from '@react-navigation/compat'
+import moment from "moment"
 
 
 function Order(props) {
@@ -167,6 +168,17 @@ function Order(props) {
                                             width: "90%", fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                             color: Color.darkGrey, marginTop: normalize(2)
                                         }}>{data.item.order_id}</Text>
+
+                                        <Text
+                                            style={{
+                                                width: "90%", fontFamily: "Roboto-Bold", fontSize: normalize(12),
+                                                color: Color.black, marginTop: normalize(5)
+                                            }}>Order placed at</Text>
+                                        <Text style={{
+                                            width: "90%", fontFamily: "Roboto-Regular", fontSize: normalize(10),
+                                            color: Color.darkGrey, marginTop: normalize(2)
+                                        }}>{moment(data.item.created_at, 'YYYY-MM-DD').format('DD MMM, YYYY')}</Text>
+
                                         <Text
                                             style={{
                                                 width: "90%", fontFamily: "Roboto-Bold", fontSize: normalize(12),

@@ -8,7 +8,7 @@ import {
     StatusBar,
     FlatList,
     TouchableOpacity,
-    Image,
+    Image, Linking,
     Platform, Alert, ToastAndroid, ActivityIndicator
 } from 'react-native';
 import Header from "../common/Header"
@@ -201,6 +201,7 @@ export default function Settings(props) {
 
                         <TouchableOpacity
                             disabled={loading}
+                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/privacy-policy"); }}
                             style={{
                                 width: "90%", height: normalize(45),
                                 backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
@@ -214,6 +215,58 @@ export default function Settings(props) {
                                 color: Color.navyBlue,
                             }}>PRIVACY POLICY</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            disabled={loading}
+                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/terms-and-Conditions"); }}
+                            style={{
+                                width: "90%", height: normalize(45),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
+                                marginBottom: normalize(10),
+                                justifyContent: "center", alignItems: "center"
+                            }}>
+                            <Text style={{
+                                fontFamily: "Roboto-Medium", fontSize: normalize(12),
+                                color: Color.navyBlue,
+                            }}>TERMS AND CONDITION</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            disabled={loading}
+                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/shipping-policy"); }}
+                            style={{
+                                width: "90%", height: normalize(45),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
+                                marginBottom: normalize(10),
+                                justifyContent: "center", alignItems: "center"
+                            }}>
+                            <Text style={{
+                                fontFamily: "Roboto-Medium", fontSize: normalize(12),
+                                color: Color.navyBlue,
+                            }}>SHIPPING POLICY</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            disabled={loading}
+                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/returns-and-cancellations"); }}
+                            style={{
+                                width: "90%", height: normalize(45),
+                                backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
+                                shadowColor: Color.black, shadowOpacity: 0.3,
+                                shadowOffset: { height: 0, width: 0 }, shadowRadius: normalize(5),
+                                marginBottom: normalize(10),
+                                justifyContent: "center", alignItems: "center"
+                            }}>
+                            <Text style={{
+                                fontFamily: "Roboto-Medium", fontSize: normalize(12),
+                                color: Color.navyBlue,
+                            }}>RETURNS AND CANCELLATIONS</Text>
+                        </TouchableOpacity>
+
 
 
 
