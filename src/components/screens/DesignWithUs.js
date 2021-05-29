@@ -156,7 +156,7 @@ export default function DesignWithUs(props) {
 
                         <ScrollView style={{ width: "100%" }}>
                             <ImageBackground style={{
-                                width: "100%", height: normalize(220), justifyContent: "center",
+                                width: "100%", aspectRatio: 1/0.68, justifyContent: "center",
                                 alignItems: "center"
                             }}
                                 source={ImagePath.contact_us}

@@ -256,7 +256,7 @@ export default function Home(props) {
                                 <ViewPager
                                     ref={bannerPager}
                                     pageMargin={normalize(10)}
-                                    style={{ width: "100%", height: normalize(200), marginTop: normalize(5) }}>
+                                    style={{ width: "100%",  aspectRatio: 1/0.55, marginTop: normalize(5) }}>
                                     {bannerList.map((value, index) => {
                                         return (
                                             <View
