@@ -619,8 +619,8 @@ export default function ProductDetail(props) {
                                                 borderBottomWidth: normalize(1),
                                                 borderBottomColor: Color.darkGrey, padding: normalize(15)
                                             }}>
-                                            {product.propeties ?
-                                                <HTML source={{ html: product.propeties }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
+                                            {product.properties ?
+                                                <HTML source={{ html: product.properties }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
 
                                         </ScrollView> : null}
 
