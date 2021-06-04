@@ -38,5 +38,6 @@ const ImagePath = {
     heart: require('./images/heart.png'),
     heart_outline: require('./images/heart_outline.png'),
     heart_outline_blue: require('./images/heart_outline_blue.png'),
+    design_with_us: require('./images/design_with_us.jpg'),
 };
 export default ImagePath;

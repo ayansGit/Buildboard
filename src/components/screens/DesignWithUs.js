@@ -71,9 +71,15 @@ export default function DesignWithUs(props) {
         try {
             let response = await getRequest("user/banners")
             console.log("RESPONSE", response)
-            if (response.data.length > 0) {
-                setBannerList(response.data)
-                changeBanner(response.data)
+            let bannerList = []
+            for(let i=0; i<response.data.length; i++){
+                if(response.data[i].type != "Web"){
+                    bannerList.push(response.data[i])
+                }
+            }
+            if (bannerList.length > 0) {
+                setBannerList(bannerList)
+                changeBanner(bannerList)
             }
 
         } catch (error) {
@@ -97,7 +103,7 @@ export default function DesignWithUs(props) {
             }
 
             // console.log('COUNT: ', count)
-        }, 10000);
+        }, 5000);
     }
 
     async function request() {
@@ -159,7 +165,7 @@ export default function DesignWithUs(props) {
                                 width: "100%", aspectRatio: 1/0.68, justifyContent: "center",
                                 alignItems: "center"
                             }}
-                                source={ImagePath.contact_us}
+                                source={ImagePath.design_with_us}
                                 resizeMode="cover">
                                 <View
                                     style={{

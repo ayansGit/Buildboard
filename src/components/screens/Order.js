@@ -51,7 +51,7 @@ function Order(props) {
             }
             let response = await getRequest("user/order/list", header)
             if (response.success) {
-                console.log("RES", response.data)
+                console.log("RES", response.data.reverse())
                 setOrderList(response.data.reverse())
             }
         } catch (error) {
@@ -119,10 +119,13 @@ function Order(props) {
                                         borderBottomColor: data.index == orderList.length - 1 ? Color.white : Color.veryLightGrey,
                                         marginTop: normalize(10), marginBottom: data.index == orderList.length - 1 ? normalize(60) : normalize(1)
                                     }}>
-                                        <View style={{
+                                        <TouchableOpacity style={{
                                             width: "100%", marginTop: normalize(2), paddingStart: "5%", paddingEnd: "2%", paddingBottom: "5%", flexDirection: "row",
                                             alignItems: "flex-start"
-                                        }}>
+                                        }}
+                                        onPress = {() => {
+                                            console.log("KK", data.item.product_id)
+                                            props.navigation.navigate("ProductDetail", { productId: data.item.product_id })}}>
                                             <Image
                                                 style={{
                                                     width: "30%", height: normalize(60), borderRadius: normalize(1), borderWidth: normalize(1),
@@ -147,7 +150,7 @@ function Order(props) {
                                                 }}
                                                 >{`Quantity: ${data.item.quantity}`}</Text>
                                             </View>
-                                        </View>
+                                        </TouchableOpacity>
 
                                         <Text
                                             style={{

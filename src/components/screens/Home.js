@@ -82,10 +82,17 @@ export default function Home(props) {
         try {
             let response = await getRequest("user/banners")
             console.log("RESPONSE", response)
-            if (response.data.length > 0) {
-                setBannerImg(response.data[0].image)
-                setBannerList(response.data)
-                //changeBanner(response.data)
+
+            let bannerList = []
+            for(let i=0; i<response.data.length; i++){
+                if(response.data[i].type != "Web"){
+                    bannerList.push(response.data[i])
+                }
+            }
+            if (bannerList.length > 0) {
+                setBannerImg(bannerList[0].image)
+                setBannerList(bannerList)
+                changeBanner(response.data)
             }
 
         } catch (error) {
@@ -110,7 +117,7 @@ export default function Home(props) {
             }
 
             // console.log('COUNT: ', count)
-        }, 10000);
+        }, 5000);
     }
 
     async function getNewArrivalProducts() {
