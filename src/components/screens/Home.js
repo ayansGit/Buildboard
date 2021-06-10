@@ -92,7 +92,7 @@ export default function Home(props) {
             if (bannerList.length > 0) {
                 setBannerImg(bannerList[0].image)
                 setBannerList(bannerList)
-                changeBanner(response.data)
+                //changeBanner(response.data)
             }
 
         } catch (error) {

@@ -48,7 +48,7 @@ export default function TrackingList(props) {
             }
             let response = await getRequest("user/order/list", header)
             if (response.success) {
-                console.log("RES", response.data)
+                console.log("RES", response.data.reverse())
                 setOrderList(response.data.reverse())
             }
         } catch (error) {

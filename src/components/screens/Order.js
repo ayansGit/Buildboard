@@ -123,9 +123,10 @@ function Order(props) {
                                             width: "100%", marginTop: normalize(2), paddingStart: "5%", paddingEnd: "2%", paddingBottom: "5%", flexDirection: "row",
                                             alignItems: "flex-start"
                                         }}
-                                        onPress = {() => {
-                                            console.log("KK", data.item.product_id)
-                                            props.navigation.navigate("ProductDetail", { productId: data.item.product_id })}}>
+                                            onPress={() => {
+                                                console.log("KK", data.item.product_id)
+                                                props.navigation.navigate("ProductDetail", { productId: data.item.product_id })
+                                            }}>
                                             <Image
                                                 style={{
                                                     width: "30%", height: normalize(60), borderRadius: normalize(1), borderWidth: normalize(1),
@@ -171,6 +172,20 @@ function Order(props) {
                                             width: "90%", fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                             color: Color.darkGrey, marginTop: normalize(2)
                                         }}>{data.item.order_id}</Text>
+
+                                        {data.item.gst_number ?
+                                            <Text
+                                                style={{
+                                                    width: "90%", fontFamily: "Roboto-Bold", fontSize: normalize(12),
+                                                    color: Color.black, marginTop: normalize(5)
+                                                }}>GST Number</Text> : null}
+
+                                        {data.item.gst_number ?
+                                            <Text style={{
+                                                width: "90%", fontFamily: "Roboto-Regular", fontSize: normalize(10),
+                                                color: Color.darkGrey, marginTop: normalize(2)
+                                            }}>{data.item.gst_number}</Text> : null}
+
 
                                         <Text
                                             style={{

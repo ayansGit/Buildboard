@@ -40,7 +40,7 @@ export default function DesignWithUs(props) {
     let subs = [];
 
     useEffect(() => {
-        fadeIn()
+        // fadeIn()
         initialize()
         getBanner()
     }, [])
@@ -79,7 +79,7 @@ export default function DesignWithUs(props) {
             }
             if (bannerList.length > 0) {
                 setBannerList(bannerList)
-                changeBanner(bannerList)
+                // changeBanner(bannerList)
             }
 
         } catch (error) {
@@ -172,11 +172,11 @@ export default function DesignWithUs(props) {
                                         width: "100%", height: "100%",
                                         backgroundColor: Color.black, opacity: 0.3
                                     }} />
-                                <Animated.Text style={{
+                                {/* <Animated.Text style={{
                                     opacity: fadeAnimation,
                                     position: "absolute", color: Color.white,
                                     fontFamily: "Roboto-Medium", fontSize: normalize(24), textAlign: "center"
-                                }}>{"CUSTOMIZE\n\nYOUR\n\nINTERIOR"}</Animated.Text>
+                                }}>{"CUSTOMIZE\n\nYOUR\n\nINTERIOR"}</Animated.Text> */}
                             </ImageBackground>
 
                             <View style={{ width: "100%", alignItems: "center" }}>
