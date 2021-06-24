@@ -167,11 +167,11 @@ export default function DesignWithUs(props) {
                             }}
                                 source={ImagePath.design_with_us}
                                 resizeMode="cover">
-                                <View
+                                {/* <View
                                     style={{
                                         width: "100%", height: "100%",
                                         backgroundColor: Color.black, opacity: 0.3
-                                    }} />
+                                    }} /> */}
                                 {/* <Animated.Text style={{
                                     opacity: fadeAnimation,
                                     position: "absolute", color: Color.white,

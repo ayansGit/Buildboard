@@ -197,7 +197,7 @@ export default function ProductDetail(props) {
         tempProduct.vendor_id = product.vendor_id
         cart.push(tempProduct)
         // dispatch(addToCartRequest(cart))
-        props.navigation.navigate("OrderSummary", { cartList: cart })
+        props.navigation.navigate("OrderSummary", { cartList: cart, productId: product.product_id })
     }
 
     async function checkPincode() {
@@ -381,10 +381,26 @@ export default function ProductDetail(props) {
                                             color: Color.darkGrey,
                                         }}>{product.name}</Text>
 
-                                        <Text style={{
-                                            fontFamily: "Roboto-Bold", fontSize: normalize(20),
-                                            color: Color.navyBlue, marginTop: normalize(5)
-                                        }}>{`₹${product.price}`}</Text>
+                                        {product.offer_price ?
+                                            <View style={{ flexDirection: "row", color: Color.navyBlue, marginTop: normalize(5) }}>
+                                                <Text style={{
+                                                    fontFamily: "Roboto-Bold", fontSize: normalize(20),
+                                                    color: Color.navyBlue,
+                                                }}>{`₹${product.offer_price}`}</Text>
+                                                <Text style={{
+                                                    fontFamily: "Roboto-Regular", fontSize: normalize(14), marginLeft: normalize(10), color: Color.grey,
+                                                    textDecorationLine: "line-through", 
+                                                }}>{`₹${product.price}`}</Text>
+                                                <Text style={{
+                                                    fontFamily: "Roboto-Regular", fontSize: normalize(14), marginLeft: normalize(3), color: Color.red,
+                                                }}>{`(${product.percentage_off}% Off)`}</Text>
+                                            </View> :
+                                            <Text style={{
+                                                fontFamily: "Roboto-Bold", fontSize: normalize(20),
+                                                color: Color.navyBlue, marginTop: normalize(5)
+                                            }}>{`₹${product.price}`}</Text>}
+
+
                                         <Text style={{
                                             fontFamily: "Roboto-Regular", fontSize: normalize(10),
                                             color: Color.darkGrey, marginTop: normalize(10)
@@ -542,7 +558,7 @@ export default function ProductDetail(props) {
                                                 <Text style={{
                                                     fontFamily: "Roboto-Bold", fontSize: normalize(12),
                                                     color: Color.darkGrey
-                                                }}>Easy</Text>
+                                                }}>Early</Text>
                                                 <Text style={{
                                                     fontFamily: "Roboto-Regular", fontSize: normalize(12),
                                                     color: Color.darkGrey

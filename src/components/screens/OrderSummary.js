@@ -30,6 +30,7 @@ export default function OrderSummary(props) {
 
     let cartArray = props.route.params.cartList // useSelector(state => state.product.cart)
     let cartVal = props.route.params.cartList
+    let productId = props.route.params.productId
 
     const [cartData, setCart] = useState([])
     const [cartDataWithoutDiscount, setCartDataWithoutDiscount] = useState([])
@@ -136,15 +137,20 @@ export default function OrderSummary(props) {
         tempCartData.map((value, index) => {
             let item = value
             if (discountedValue > 0) {
-                let discountedValueRem = item.price - discountedValue
+                let discountedValueRem = item.offer_price ? (item.offer_price - discountedValue) : (item.price - discountedValue)
                 if (discountedValueRem >= 0) {
-                    item.price = discountedValueRem
+                    item.offer_price ?
+                        item.offer_price = discountedValueRem :
+                        item.price = discountedValueRem
+
                     item.discount = discountedValue
                     discountedValue = 0
                 } else {
                     discountedValue = (-1) * discountedValueRem
-                    item.price = 0
-                    item.discount = item.price
+                    item.offer_price ?
+                        item.offer_price = 0 :
+                        item.price = 0
+                    item.discount = item.offer_price ? item.offer_price : item.price
                 }
             }
             newCart.push(item)
@@ -176,10 +182,34 @@ export default function OrderSummary(props) {
                 console.log("ERROR", error)
             }
         }
-
         setCouponCheking(false)
 
     }
+
+    async function removeDiscountForSingleItem(discount) {
+
+        setCouponCheking(true)
+        try {
+            let response = await getRequest(`user/product/${productId}/list`)
+            console.log("RESPONSE", response)
+            let product = response.data
+            let cart = []
+            let tempProduct = product
+            tempProduct.quantity = 1
+            tempProduct.vendor_id = product.vendor_id
+            cart.push(tempProduct)
+            setCart(cart)
+            setCouponCode("")
+            setDiscount(0)
+
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+        setCouponCheking(false)
+
+    }
+
+
 
     async function placeOrder(transactionId) {
         setLoading(true)
@@ -207,7 +237,7 @@ export default function OrderSummary(props) {
                 quantity: cartList[i].quantity,
                 product_name: cartList[i].name,
                 product_image: cartList[i].image,
-                product_price: cartList[i].price,
+                product_price: cartList[i].offer_price ? cartList[i].offer_price : cartList[i].price,
                 full_name: name,
                 address_id: address,
                 phone: phone,
@@ -300,15 +330,13 @@ export default function OrderSummary(props) {
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Bold", fontSize: normalize(16),
                         color: Color.navyBlue, marginTop: normalize(2)
-                    }}
-                    >{`₹${data.item.price}`}</Text>
+                    }}>{data.item.offer_price? `₹${data.item.offer_price}`: `₹${data.item.price}`}</Text>
 
                     {data.item.discount != undefined ?
                         <Text style={{
                             width: "100%", fontFamily: "Roboto-Regular", fontSize: normalize(12),
                             color: Color.darkGrey, marginTop: normalize(3), marginLeft: normalize(1)
                         }}>{`Discount: ₹${data.item.discount}`}</Text> : null}
-
 
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Regular", fontSize: normalize(12),
@@ -325,7 +353,7 @@ export default function OrderSummary(props) {
     function getProductPrice() {
         let price = 0;
         for (let i = 0; i < cartData.length; i++) {
-            price = (price + cartData[i].price) * cartData[i].quantity
+            price = (price + cartData[i].offer_price? cartData[i].offer_price : cartData[i].price) * cartData[i].quantity
         }
         return price
     }
@@ -333,7 +361,7 @@ export default function OrderSummary(props) {
     function getProductPriceWithoutDiscount() {
         let price = 0;
         for (let i = 0; i < cartArray.length; i++) {
-            price = (price + cartArray[i].price) * cartArray[i].quantity
+            price = (price + cartArray[i].offer_price? cartArray[i].offer_price : cartArray[i].price) * cartArray[i].quantity
         }
         return price
     }
@@ -473,7 +501,7 @@ export default function OrderSummary(props) {
                                             paddingLeft: normalize(10), paddingRight: normalize(10),
                                             backgroundColor: Color.blue,
                                         }}
-                                        onPress={() => refreshCartList()}>
+                                        onPress={() => productId == undefined || productId == null ? refreshCartList() : removeDiscountForSingleItem()}>
                                         {couponCheking ? <ActivityIndicator size="small" color={Color.white} /> :
                                             <Text style={{
                                                 color: Color.white,

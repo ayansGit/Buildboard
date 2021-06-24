@@ -212,11 +212,24 @@ export default function Cart(props) {
                         color: Color.navyBlue
                     }}
                     >{data.item.name}</Text>
+                    {data.item.offer_price ?
+                        <View style={{ flexDirection: "row", marginTop: normalize(2), }}>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={{
+                                    fontFamily: "Roboto-Light",
+                                    fontSize: normalize(12), color: Color.grey, textAlign: "center",
+                                    textDecorationLine: "line-through"
+                                }}>
+                                {`₹${data.item.price}`}
+                            </Text>
+                        </View> : null}
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Bold", fontSize: normalize(16),
                         color: Color.navyBlue, marginTop: normalize(2)
                     }}
-                    >{`₹${data.item.price}`}</Text>
+                    >{data.item.offer_price ? `₹${data.item.offer_price}` : `₹${data.item.price}`}</Text>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: normalize(10) }}>
                         <TouchableOpacity
                             disabled={data.item.loading != undefined && data.item.loading}

@@ -179,7 +179,7 @@ export default function ProductList(props) {
     function renderProductItem(data) {
         return (
             <TouchableOpacity style={{
-                width: "40%",
+                width: "40%", height: normalize(200),
                 backgroundColor: Color.white,
                 borderRadius: normalize(12), elevation: normalize(5), shadowColor: Color.black,
                 shadowOpacity: 0.3, shadowRadius: normalize(5), shadowOffset: { height: 0, width: 0 },
@@ -218,14 +218,40 @@ export default function ProductList(props) {
                     {`Category: ${data.item.category.name}`}
                 </Text>
 
+                {
+                    data.item.offer_price ?
+                        <View style={{ flexDirection: "row", marginTop: normalize(2), marginTop: normalize(5), }}>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={{
+                                    fontFamily: "Roboto-Light",
+                                    fontSize: normalize(10), color: Color.grey, textAlign: "center",
+                                    marginStart: normalize(5), textDecorationLine: "line-through"
+                                }}>
+                                {`₹${data.item.price}`}
+                            </Text>
+                            <Text
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={{
+                                    fontFamily: "Roboto-Light",
+                                    fontSize: normalize(10), color: Color.red, textAlign: "center",
+                                    marginStart: normalize(2), marginEnd: normalize(5)
+                                }}>
+                                {`${data.item.percentage_off}% Off`}
+                            </Text>
+                        </View> : null
+                }
+
                 <Text
                     numberOfLines={1}
                     style={{
                         fontFamily: "Roboto-Bold",
-                        fontSize: normalize(16), color: Color.navyBlue, textAlign: "center", marginTop: normalize(5),
-                        marginStart: normalize(5), marginEnd: normalize(5)
+                        fontSize: normalize(16), color: Color.navyBlue, textAlign: "center",
+                        marginStart: normalize(5), marginEnd: normalize(5), marginTop: data.item.offer_price? normalize(0):normalize(5)
                     }}>
-                    {`₹${data.item.price}`}
+                    {data.item.offer_price ? `₹${data.item.offer_price}`: `₹${data.item.price}`}
                 </Text>
 
             </TouchableOpacity>

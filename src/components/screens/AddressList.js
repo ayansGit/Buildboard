@@ -91,7 +91,7 @@ export default function AddressList(props) {
                 } : { flex: 1 }}>
 
                     <Header
-                        title={"Choose Address"}
+                        title={isEditable ? "Address List" : "Choose Address"}
                         navigation={props.navigation}
                         containNavDrawer={false}
                         showCart={isEditable}
@@ -131,7 +131,7 @@ export default function AddressList(props) {
                                                 padding: normalize(10), paddingEnd: normalize(5), marginTop: normalize(10), backgroundColor: Color.white,
                                                 elevation: normalize(8), shadowColor: Color.black, justifyContent: "space-around",
                                                 shadowOpacity: 0.1, shadowRadius: normalize(4), shadowOffset: { height: 0, width: 0 },
-                                                marginBottom: data.index == addressList.length-1 ? normalize(120) : normalize(10), alignItems: "flex-start", alignSelf: "center"
+                                                marginBottom: data.index == addressList.length - 1 ? normalize(120) : normalize(10), alignItems: "flex-start", alignSelf: "center"
                                             }}
                                                 onPress={() => {
                                                     if (isEditable)
@@ -149,7 +149,7 @@ export default function AddressList(props) {
                                                     <RadioButton value={data.index} /> : null}
 
 
-                                                <View style={{ width: "75%" }}>
+                                                <View style={{ width: isEditable? "95%" : "75%" }}>
                                                     <Text style={{ fontFamily: "Roboto-Medium", fontSize: normalize(14), color: Color.darkGrey }}>{data.item.full_name}</Text>
                                                     <Text style={{
                                                         fontFamily: "Roboto-Medium", fontSize: normalize(11),
@@ -157,13 +157,17 @@ export default function AddressList(props) {
                                                     }}>{`${data.item.house_number} ${data.item.area}, ${data.item.landmark}, ${data.item.city} ${data.item.pincode}, ${getStateName(data.item.state_id)}`}</Text>
                                                 </View>
 
-                                                {isEditable ? <TouchableOpacity
-                                                    onPress={() => { }}>
-                                                    <Image
-                                                        style={{ height: normalize(12), width: normalize(12), margin: normalize(5) }}
-                                                        source={ImagePath.delete}
-                                                        resizeMode="contain" />
-                                                </TouchableOpacity> : Platform.OS == "ios" ?
+                                                {/* {isEditable ?
+                                                    <TouchableOpacity
+                                                        onPress={() => { }}>
+                                                        <Image
+                                                            style={{ height: normalize(12), width: normalize(12), margin: normalize(5) }}
+                                                            source={ImagePath.delete}
+                                                            resizeMode="contain" />
+                                                    </TouchableOpacity> : Platform.OS == "ios" ?
+                                                        <RadioButton value={data.index} /> : null} */}
+
+                                                {Platform.OS == "ios" ?
                                                     <RadioButton value={data.index} /> : null}
 
                                             </TouchableOpacity>
