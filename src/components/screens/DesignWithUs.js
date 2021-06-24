@@ -79,7 +79,7 @@ export default function DesignWithUs(props) {
             }
             if (bannerList.length > 0) {
                 setBannerList(bannerList)
-                // changeBanner(bannerList)
+                changeBanner(bannerList)
             }
 
         } catch (error) {
@@ -103,7 +103,7 @@ export default function DesignWithUs(props) {
             }
 
             // console.log('COUNT: ', count)
-        }, 5000);
+        }, 3000);
     }
 
     async function request() {

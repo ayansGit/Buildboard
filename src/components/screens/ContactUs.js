@@ -31,6 +31,7 @@ export default function ContactUs(props) {
         first_name: "",
         last_name: "",
         email: "",
+        phone: "",
         description: ""
     })
 
@@ -42,6 +43,10 @@ export default function ContactUs(props) {
             showAlert("Enter your last name")
         } else if (contactRequest.email.length == 0) {
             showAlert("Enter your email")
+        } else if (contactRequest.phone.length == 0) {
+            showAlert("Enter your phone number")
+        }else if (contactRequest.phone.length < 10) {
+            showAlert("Your phone number should contain 10 digit")
         } else if (contactRequest.description.length == 0) {
             showAlert("Enter your details")
         } else {
@@ -160,7 +165,6 @@ export default function ContactUs(props) {
                                     marginTop: normalize(10)
                                 }}>Email</Text>
                                 <TextInput
-                                    style={{ marginTop: Platform.OS == "android" ? 0.5 : normalize(5) }}
                                     value={contactRequest.email}
                                     onChangeText={(text) => {
                                         setContactRequest({
@@ -171,7 +175,33 @@ export default function ContactUs(props) {
                                     numberOfLines={1}
                                     style={{
                                         width: "100%", borderBottomWidth: normalize(1),
+                                        marginTop: Platform.OS == "android" ? 0.5 : normalize(5),
                                         borderBottomColor: Color.darkGrey,
+                                        fontFamily: "Roboto-Regular",
+                                        fontSize: normalize(12), color: Color.grey, 
+                                    }}
+                                    selectionColor={Color.blue} />
+
+                                <Text style={{
+                                    fontFamily: "Roboto-Regular",
+                                    fontSize: normalize(8), color: Color.blue,
+                                    marginTop: normalize(10)
+                                }}>Phone number</Text>
+                                <TextInput
+                                    value={contactRequest.phone}
+                                    onChangeText={(text) => {
+                                        setContactRequest({
+                                            ...contactRequest,
+                                            phone: text
+                                        })
+                                    }}
+                                    numberOfLines={1}
+                                    maxLength={10}
+                                    keyboardType="numeric"
+                                    style={{
+                                        width: "100%", borderBottomWidth: normalize(1),
+                                        borderBottomColor: Color.darkGrey,
+                                        marginTop: Platform.OS == "android" ? 0.5 : normalize(5),
                                         fontFamily: "Roboto-Regular",
                                         fontSize: normalize(12), color: Color.grey,
                                     }}
