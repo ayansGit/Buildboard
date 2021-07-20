@@ -27,12 +27,14 @@ import { getToken } from "../../utils/storage";
 
 export default function Home(props) {
 
+    var interval = null
     var bannerPager = useRef()
     const [isSignedIn, setSignedIn] = useState(false)
     const [categoryList, setCategoryList] = useState([])
     const [bannerList, setBannerList] = useState([])
     const [bannerImg, setBannerImg] = useState("")
     const [newArrivalProducts, setNewArrivalProducts] = useState([])
+    const [trendingProducts, setTrendingProducts] = useState([])
 
     useEffect(() => {
         immersiveModeOff()
@@ -40,6 +42,11 @@ export default function Home(props) {
         getBanner()
         getCategoryList()
         getNewArrivalProducts()
+        getTrendingProducts()
+        return () => {
+            if (interval)
+                clearInterval(interval)
+        }
     }, [])
 
     async function initialize() {
@@ -82,17 +89,18 @@ export default function Home(props) {
         try {
             let response = await getRequest("user/banners")
             console.log("RESPONSE", response)
-
+        
             let bannerList = []
-            for(let i=0; i<response.data.length; i++){
-                if(response.data[i].type != "Web"){
+            for (let i = 0; i < response.data.length; i++) {
+                if (response.data[i].type != "Web") {
                     bannerList.push(response.data[i])
                 }
             }
             if (bannerList.length > 0) {
                 setBannerImg(bannerList[0].image)
                 setBannerList(bannerList)
-                changeBanner(response.data)
+                console.log('banner list : ', bannerList.length)
+                changeBanner(bannerList)
             }
 
         } catch (error) {
@@ -103,20 +111,15 @@ export default function Home(props) {
 
     function changeBanner(bannerList) {
         var count = 0
-        var interval = setInterval(function () {
-            if (count < (bannerList.length)) {
-                if (bannerPager != null) {
-                    console.log('COUNT 2: ', count)
-                    bannerPager.current.setPage(count)
+        interval = setInterval(function () {
+            if (bannerPager!= undefined && bannerPager != null) {
+                bannerPager.current.setPage(count)
+                if (count == (bannerList.length - 1)) {
+                    count = 0
+                } else {
                     count++
                 }
-            } else {
-                // clearInterval(interval)
-                // changeBanner()
-                count = 0
             }
-
-            // console.log('COUNT: ', count)
         }, 3000);
     }
 
@@ -127,7 +130,25 @@ export default function Home(props) {
             if (response.data.length > 10) {
                 var trimmedProducts = response.data.slice(0, 10)
                 setNewArrivalProducts(trimmedProducts)
-            } else setNewArrivalProducts(response.data)
+            } else if(response.data.length > 10) {
+                setNewArrivalProducts(response.data)
+            }
+
+        } catch (error) {
+            console.log("ERROR", error)
+        }
+    }
+
+    async function getTrendingProducts() {
+        try {
+            let response = await getRequest("user/products")
+            console.log("RESPONSE", response)
+            if (response.data.length > 10) {
+                var trimmedProducts = response.data.slice(0, 10)
+                setTrendingProducts(trimmedProducts.reverse())
+            } else if(response.data.length > 10) {
+                setTrendingProducts(response.data.reverse())
+            }
 
         } catch (error) {
             console.log("ERROR", error)
@@ -263,7 +284,7 @@ export default function Home(props) {
                                 <ViewPager
                                     ref={bannerPager}
                                     pageMargin={normalize(10)}
-                                    style={{ width: "100%",  aspectRatio: 1/0.55, marginTop: normalize(5) }}>
+                                    style={{ width: "100%", aspectRatio: 1 / 0.55, marginTop: normalize(5) }}>
                                     {bannerList.map((value, index) => {
                                         return (
                                             <View
@@ -311,61 +332,24 @@ export default function Home(props) {
                                     null
                             }
 
-                            {newArrivalProducts.length > 0 ?
+                            {trendingProducts.length > 0 ?
                                 <Text style={{
                                     fontSize: normalize(14), fontFamily: "Roboto-Medium", color: Color.navyBlue,
                                     marginLeft: "6%", marginTop: normalize(5)
                                 }}>Trending</Text> : null}
 
 
-                            <FlatList
-                                horizontal={true}
-                                style={{ width: "100%", marginBottom: normalize(120) }}
-                                data={newArrivalProducts}
-                                renderItem={(data) => renderNewArrivalItem(data)}
-                                keyExtractor={(item, index) => index.toString()}
-                                showsHorizontalScrollIndicator={false} />
+                            {
+                                trendingProducts.length > 0 ?
+                                    <FlatList
+                                        horizontal={true}
+                                        style={{ width: "100%", marginBottom: normalize(120) }}
+                                        data={trendingProducts}
+                                        renderItem={(data) => renderNewArrivalItem(data)}
+                                        keyExtractor={(item, index) => index.toString()}
+                                        showsHorizontalScrollIndicator={false} /> : null
+                            }
 
-                            {/* <Text style={{
-                                fontFamily: "Roboto-Medium",
-                                fontSize: normalize(12), color: Color.grey, textAlign: "center", marginTop: normalize(50)
-                            }}>
-                                You can follow us on
-                            </Text>
-
-                            <View style={{
-                                flexDirection: "row", alignSelf: "center", marginTop: normalize(15),
-                                marginBottom: normalize(120), alignItems: "center"
-                            }}>
-                                <TouchableOpacity
-                                    onPress={() => { Linking.openURL("https://www.facebook.com/buildboardfurnishers/") }}>
-                                    <Image
-                                        style={{ height: normalize(45), width: normalize(45) }}
-                                        source={ImagePath.fbIcon}
-                                        resizeMode="cover"
-                                    />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={() => { Linking.openURL("https://www.instagram.com/buildboardfurnishers/?igshid=hi8trw08gw3r") }}
-                                    style={{ marginLeft: normalize(15), marginRight: normalize(15) }}>
-                                    <Image
-                                        style={{
-                                            height: normalize(38), width: normalize(38),
-                                        }}
-                                        source={ImagePath.instaIcon}
-                                        resizeMode="cover" />
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={() => Linking.openURL("https://www.linkedin.com/m/company/buildboard-furnishers/")}>
-                                    <Image
-                                        style={{ height: normalize(35), width: normalize(35), }}
-                                        source={ImagePath.linkedIdIcon}
-                                        resizeMode="cover" />
-                                </TouchableOpacity>
-
-                            </View> */}
                         </ScrollView>
 
                     </View>

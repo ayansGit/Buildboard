@@ -26,6 +26,7 @@ import { FieldType, validate } from "../../utils/validation"
 export default function DesignWithUs(props) {
 
     const TAG = "DesignWithUs"
+    var interval = null
     var bannerPager = useRef()
     const [isSignedIn, setSignedIn] = useState(false)
     const [bannerList, setBannerList] = useState([])
@@ -43,6 +44,10 @@ export default function DesignWithUs(props) {
         // fadeIn()
         initialize()
         getBanner()
+        return () => {
+            if (interval)
+                clearInterval(interval)
+        }
     }, [])
 
 
@@ -72,8 +77,8 @@ export default function DesignWithUs(props) {
             let response = await getRequest("user/banners")
             console.log("RESPONSE", response)
             let bannerList = []
-            for(let i=0; i<response.data.length; i++){
-                if(response.data[i].type != "Web"){
+            for (let i = 0; i < response.data.length; i++) {
+                if (response.data[i].type != "Web") {
                     bannerList.push(response.data[i])
                 }
             }
@@ -89,20 +94,15 @@ export default function DesignWithUs(props) {
 
     function changeBanner(bannerList) {
         var count = 0
-        var interval = setInterval(function () {
-            if (count < (bannerList.length)) {
-                if (bannerPager != null) {
-                    console.log('COUNT 3: ', count)
-                    bannerPager.current.setPage(count)
+        interval = setInterval(function () {
+            if (bannerPager!= undefined && bannerPager != null) {
+                bannerPager.current.setPage(count)
+                if (count == (bannerList.length - 1)) {
+                    count = 0
+                } else {
                     count++
                 }
-            } else {
-                // clearInterval(interval)
-                // changeBanner()
-                count = 0
             }
-
-            // console.log('COUNT: ', count)
         }, 3000);
     }
 
@@ -162,7 +162,7 @@ export default function DesignWithUs(props) {
 
                         <ScrollView style={{ width: "100%" }}>
                             <ImageBackground style={{
-                                width: "100%", aspectRatio: 1/0.68, justifyContent: "center",
+                                width: "100%", aspectRatio: 1 / 0.68, justifyContent: "center",
                                 alignItems: "center"
                             }}
                                 source={ImagePath.design_with_us}
