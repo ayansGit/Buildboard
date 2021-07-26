@@ -20,6 +20,7 @@ import Wishlist from "../components/screens/Wishlist"
 import Search from "../components/screens/Search.js"
 import AccountUpdate from "../components/screens/AccountUpdate"
 import ProductImage from "../components/screens/ProductImage"
+import Coupon from '../components/screens/Coupon';
 
 const Stack = createStackNavigator();
 
@@ -46,6 +47,7 @@ export default function SignedInNavigator() {
         <Stack.Screen name="GstForm" component = {GstForm}/>
         <Stack.Screen name="Wishlist" component = {Wishlist}/>
         <Stack.Screen name="Search" component = {Search}/>
+        <Stack.Screen name="Coupon" component = {Coupon}/>
       </Stack.Navigator>
   );
 }

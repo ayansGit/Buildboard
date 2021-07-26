@@ -10,7 +10,8 @@ export const type = {
     addressId: "buildboard.addressId",
     phone: "buildboard.phone",
     company: "buildboard.company",
-    gstNumber: "buildboard.gstNumber"
+    gstNumber: "buildboard.gstNumber",
+    coupon: "buildboard.coupon",
 }
 
 export async function clearAppData() {
@@ -239,6 +240,32 @@ export async function getCompany() {
     try {
         value = await AsyncStorage.getItem(
             type.company)
+    } catch (error) {
+        // Error saving data
+    }
+    return value;
+}
+
+export async function setCoupon(value) {
+
+    try {
+        await AsyncStorage.setItem(
+            type.coupon,
+            JSON.stringify(value)
+        );
+    } catch (error) {
+        // Error saving data
+    }
+}
+
+export async function getCoupon() {
+    let value = null
+    try {
+        value = await AsyncStorage.getItem(type.coupon)
+        let data = JSON.parse(value)
+        if (Object.keys(data).length === 0 && data.constructor === Object)
+            return null;
+        else return data
     } catch (error) {
         // Error saving data
     }

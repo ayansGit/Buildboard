@@ -39,5 +39,6 @@ const ImagePath = {
     heart_outline: require('./images/heart_outline.png'),
     heart_outline_blue: require('./images/heart_outline_blue.png'),
     design_with_us: require('./images/design_with_us.jpg'),
+    coupon: require('./images/coupon.png'),
 };
 export default ImagePath;

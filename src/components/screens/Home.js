@@ -138,7 +138,6 @@ export default function Home(props) {
             console.log("ERROR", error)
         }
     }
-
     async function getTrendingProducts() {
         try {
             let response = await getRequest("user/products")

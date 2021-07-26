@@ -22,7 +22,7 @@ import ImagePath from '../../assets/ImagePath';
 import { getRequest, postRequest } from "../../utils/apiRequest"
 import { addToCartRequest } from "../../actions/ProductAction";
 import { Checkbox, FAB } from 'react-native-paper';
-import { getUserId, getToken, getAddress, getUserName, getPhone, getCompany, getGST, getPincode, getEmail } from "../../utils/storage";
+import { getUserId, getToken, getAddress, getUserName, getPhone, getCompany, getGST, getPincode, getEmail, getCoupon, setCoupon } from "../../utils/storage";
 import { showAlert } from "../../utils/Utils"
 import RazorpayCheckout from 'react-native-razorpay';
 
@@ -75,6 +75,8 @@ export default function OrderSummary(props) {
         if (pincode != null && pincode != undefined && pincode.length > 0) {
             checkPincode(pincode)
         }
+        
+        checkCoupon()
 
 
     }
@@ -98,31 +100,37 @@ export default function OrderSummary(props) {
         }
     }
 
-    async function checkCoupon(couponCode) {
+    async function checkCoupon() {
         setCouponCheking(true)
+        
         try {
-            let token = await getToken()
-            let header = {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            }
-            let response = await postRequest("user/coupon/check", { name: couponCode }, header)
-            console.log(response)
-            if (response.success) {
-                console.log("RESPONSE", response)
-                if (response.data.type == "Fixed") {
-                    setDiscount(response.data.value)
-                    updateCartOnDiscount(response.data.value)
-                } else {
-                    let discount = getProductPrice() * (response.data.value / 100)
-                    discount = discount.toFixed(2)
-                    discount = (discount % 1 != 0 ? discount : Math.floor(discount))
-                    setDiscount(discount)
-                    updateCartOnDiscount(discount)
+            let couponData = await getCoupon()
+            if(couponData!= null){
+                let couponCode = couponData.name
+                let token = await getToken()
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
                 }
-                showAlert(response.data.description)
-            } else {
-                alert("Coupon not valid")
+                let response = await postRequest("user/coupon/check", { name: couponCode }, header)
+                console.log(response)
+                if (response.success) {
+                    console.log("RESPONSE", response)
+                    setCouponCode(couponCode)
+                    if (response.data.type == "Fixed") {
+                        setDiscount(response.data.value)
+                        updateCartOnDiscount(response.data.value)
+                    } else {
+                        let discount = getProductPrice() * (response.data.value / 100)
+                        discount = discount.toFixed(2)
+                        discount = (discount % 1 != 0 ? discount : Math.floor(discount))
+                        setDiscount(discount)
+                        updateCartOnDiscount(discount)
+                    }
+                    showAlert(response.data.description)
+                } else {
+                    alert("Coupon not valid")
+                }  
             }
         } catch (error) {
             alert(error.message)
@@ -161,6 +169,7 @@ export default function OrderSummary(props) {
 
     async function refreshCartList() {
 
+        setCoupon({})
         setCouponCheking(true)
         let token = await getToken()
         if (token != null && token != undefined && token.length > 0) {
@@ -453,22 +462,22 @@ export default function OrderSummary(props) {
                             {discount == 0 ?
                                 <View style={{ flexDirection: "row", width: "100%", alignItems: "center" }}>
 
-                                    <TextInput style={{
-                                        width: "100%", borderBottomWidth: normalize(1),
-                                        borderBottomColor: Color.veryLightGrey, fontFamily: "Roboto-Regular",
+                                    <Text style={{
+                                        width: "100%",
+                                        fontFamily: "Roboto-Regular",
                                         fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
-                                        paddingBottom: Platform.OS == "ios" ? normalize(5) : 0
+                                        
                                     }}
-                                        returnKeyType="go"
-                                        onSubmitEditing={() => {
-                                            checkCoupon(couponCode)
-                                        }}
+                                        // returnKeyType="go"
+                                        // onSubmitEditing={() => {
+                                        //     checkCoupon(couponCode)
+                                        // }}
                                         value={couponCode}
-                                        onChangeText={(text) => setCouponCode(text)}
-                                        placeholder={"Coupon code"}
-                                        placeholderTextColor={Color.grey}
+                                        // onChangeText={(text) => setCouponCode(text)}
+                                        // placeholder={"Coupon code"}
+                                        // placeholderTextColor={Color.grey}
                                         selectionColor={Color.blue}
-                                        numberOfLines={1} />
+                                        numberOfLines={1}>Choose a coupon code</Text>
 
                                     <TouchableOpacity
                                         disabled={couponCheking || loading}
@@ -477,7 +486,7 @@ export default function OrderSummary(props) {
                                             paddingLeft: normalize(10), paddingRight: normalize(10),
                                             backgroundColor: Color.blue, right: 0, position: "absolute"
                                         }}
-                                        onPress={() => checkCoupon(couponCode)}>
+                                        onPress={() => props.navigation.navigate("Coupon")}>
                                         {couponCheking ? <ActivityIndicator size="small" color={Color.white} /> :
                                             <Text style={{
                                                 color: Color.white,
