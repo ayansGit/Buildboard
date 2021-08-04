@@ -33,8 +33,9 @@ export default function OrderSummary(props) {
     let productId = props.route.params.productId
 
     const [cartData, setCart] = useState([])
-    const [cartDataWithoutDiscount, setCartDataWithoutDiscount] = useState([])
-    const [totalPriceNoDiscount, setTotalPriceWithNoDiscount] = useState(0)
+    const [cartDataWithoutDiscount, setCartDataWithoutDiscount] = useState(props.route.params.cartList)
+    const [totalPriceNoDiscount, setTotalPriceWithNoDiscount] = useState(getProductPriceWithoutDiscount())
+    const [totalPriceNoDiscountNoOffer, setTotalPriceWithNoDiscountNoOffer] = useState(getProductPriceWithoutDiscountWithoutOffer())
     const dispatch = useDispatch()
     const [isCod, setCod] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -46,11 +47,12 @@ export default function OrderSummary(props) {
     const [discount, setDiscount] = useState(0)
     const [isOrderPlacable, setOrderPlacable] = useState(false)
 
-    console.log("CART !!:", props.route.params.cartList)
     useEffect(() => {
         // getOrderList()
+        setCoupon({})
+        setTotalPriceWithNoDiscountNoOffer(getProductPriceWithoutDiscountWithoutOffer())
         setTotalPriceWithNoDiscount(getProductPriceWithoutDiscount())
-        setCartDataWithoutDiscount(getCartWithoutDiscount())
+        setCartDataWithoutDiscount(props.route.params.cartList)
         const unsubscribe = props.navigation.addListener('focus', () => {
             // The screen is focused
             // Call any action
@@ -65,8 +67,16 @@ export default function OrderSummary(props) {
         let name = await getUserName()
         let phoneVal = await getPhone()
         let pincode = await getPincode()
+        console.log("JJ", cartArray)
+        // if (cartData.length == 0) {
+        //     setCart(cartArray)
+        // }
+        if (productId == undefined || productId == null) {
+            await getCartList()
+        } else {
+            await getSingleProduct()
+        }
 
-        setCart(cartArray)
         if (addressVal != null && addressVal != undefined && addressVal.length > 0) {
             setAddress(addressVal)
         }
@@ -75,11 +85,68 @@ export default function OrderSummary(props) {
         if (pincode != null && pincode != undefined && pincode.length > 0) {
             checkPincode(pincode)
         }
-        
-        checkCoupon()
 
 
     }
+
+    async function getCartList() {
+
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            try {
+                let couponData = await getCoupon()
+                if (couponData != null)
+                    setCouponCheking(true)
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+                let response = await getRequest(`user/cart/list`, header)
+                console.log("RESPONSE", response)
+                if (response.success) {
+                    props.navigation.setParams({ cartList: response.data })
+                    setCart(response.data)
+                    checkCoupon(response.data)
+                }
+
+            } catch (error) {
+                console.log("ERROR", error)
+            }
+        }
+        setCouponCheking(false)
+
+    }
+
+    async function getSingleProduct() {
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            try {
+                let couponData =  await getCoupon()
+                if (couponData != null)
+                    setCouponCheking(true)
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+                console.log("RESPONSE", response)
+                let response = await getRequest(`user/product/${productId}/list`)
+                let product = response.data
+                let cart = []
+                let tempProduct = product
+                tempProduct.quantity = 1
+                tempProduct.vendor_id = product.vendor_id
+                cart.push(tempProduct)
+                setCart(cart)
+                checkCoupon(cart)
+
+            } catch (error) {
+                console.log("ERROR", error)
+            }
+        }
+        setCouponCheking(false)
+
+    }
+
 
     async function checkPincode(pincode) {
 
@@ -100,12 +167,13 @@ export default function OrderSummary(props) {
         }
     }
 
-    async function checkCoupon() {
+    async function checkCoupon(cartArr) {
         setCouponCheking(true)
-        
+
         try {
             let couponData = await getCoupon()
-            if(couponData!= null){
+            console.log("Applied Coupon: ", couponData)
+            if (couponData != null) {
                 let couponCode = couponData.name
                 let token = await getToken()
                 let header = {
@@ -116,21 +184,26 @@ export default function OrderSummary(props) {
                 console.log(response)
                 if (response.success) {
                     console.log("RESPONSE", response)
-                    setCouponCode(couponCode)
+
                     if (response.data.type == "Fixed") {
                         setDiscount(response.data.value)
-                        updateCartOnDiscount(response.data.value)
+                        updateCartOnDiscount(response.data.value, cartArr)
                     } else {
-                        let discount = getProductPrice() * (response.data.value / 100)
+                        console.log("Percent Discount1", response.data.value)
+                        console.log("Product Price", getProductPrice())
+                        let discount = (getProductPrice2() * response.data.value) / 100
+                        console.log("Percent Discount2", discount)
                         discount = discount.toFixed(2)
                         discount = (discount % 1 != 0 ? discount : Math.floor(discount))
+                        console.log("Percent Discount", discount)
                         setDiscount(discount)
-                        updateCartOnDiscount(discount)
+                        updateCartOnDiscount(discount, cartArr)
                     }
+                    setCouponCode(couponCode)
                     showAlert(response.data.description)
                 } else {
                     alert("Coupon not valid")
-                }  
+                }
             }
         } catch (error) {
             alert(error.message)
@@ -138,12 +211,14 @@ export default function OrderSummary(props) {
         setCouponCheking(false)
     }
 
-    function updateCartOnDiscount(discount) {
+    function updateCartOnDiscount(discount, cartArr) {
+        console.log("Discount Amount: ", discount)
         let newCart = []
-        let tempCartData = cartData
+        const tempCartData = cartArr
+        console.log("Cart Date: ", cartArr)
         let discountedValue = discount
-        tempCartData.map((value, index) => {
-            let item = value
+        for (let i = 0; i < tempCartData.length; i++) {
+            let item = tempCartData[i]
             if (discountedValue > 0) {
                 let discountedValueRem = item.offer_price ? (item.offer_price - discountedValue) : (item.price - discountedValue)
                 if (discountedValueRem >= 0) {
@@ -161,10 +236,11 @@ export default function OrderSummary(props) {
                     item.discount = item.offer_price ? item.offer_price : item.price
                 }
             }
+            console.log('CART_ITEM', item)
             newCart.push(item)
-        })
-
+        }
         setCart(newCart)
+
     }
 
     async function refreshCartList() {
@@ -181,6 +257,8 @@ export default function OrderSummary(props) {
                 let response = await getRequest(`user/cart/list`, header)
                 console.log("RESPONSE", response)
                 if (response.success) {
+                    props.navigation.setParams({ cartList: response.data })
+                    // cartVal = response.data
                     setCart(response.data)
                     setCouponCode("")
                     setDiscount(0)
@@ -196,7 +274,7 @@ export default function OrderSummary(props) {
     }
 
     async function removeDiscountForSingleItem(discount) {
-
+        setCoupon({})
         setCouponCheking(true)
         try {
             let response = await getRequest(`user/product/${productId}/list`)
@@ -223,8 +301,6 @@ export default function OrderSummary(props) {
     async function placeOrder(transactionId) {
         setLoading(true)
         var userId = parseInt(await getUserId())
-        console.log("USER_ID: ", userId)
-        console.log("PLACE_ORDER: ", cartData)
         let cartList = cartData
 
         let gstNumber = await getGST()
@@ -256,8 +332,6 @@ export default function OrderSummary(props) {
                 company_name: company_name
             })
         }
-
-        console.log("ORDER_REQ: ", JSON.stringify(orderRequest))
 
         try {
             let token = await getToken()
@@ -339,7 +413,7 @@ export default function OrderSummary(props) {
                     <Text style={{
                         width: "100%", fontFamily: "Roboto-Bold", fontSize: normalize(16),
                         color: Color.navyBlue, marginTop: normalize(2)
-                    }}>{data.item.offer_price? `₹${data.item.offer_price}`: `₹${data.item.price}`}</Text>
+                    }}>{data.item.offer_price ? `₹${data.item.offer_price}` : `₹${data.item.price}`}</Text>
 
                     {data.item.discount != undefined ?
                         <Text style={{
@@ -362,7 +436,15 @@ export default function OrderSummary(props) {
     function getProductPrice() {
         let price = 0;
         for (let i = 0; i < cartData.length; i++) {
-            price = (price + cartData[i].offer_price? cartData[i].offer_price : cartData[i].price) * cartData[i].quantity
+            price += (cartData[i].offer_price ? cartData[i].offer_price : cartData[i].price) * cartData[i].quantity
+        }
+        return price
+    }
+
+    function getProductPrice2() {
+        let price = 0;
+        for (let i = 0; i < cartArray.length; i++) {
+            price += (cartArray[i].offer_price ? cartArray[i].offer_price : cartArray[i].price) * cartArray[i].quantity
         }
         return price
     }
@@ -370,7 +452,15 @@ export default function OrderSummary(props) {
     function getProductPriceWithoutDiscount() {
         let price = 0;
         for (let i = 0; i < cartArray.length; i++) {
-            price = (price + cartArray[i].offer_price? cartArray[i].offer_price : cartArray[i].price) * cartArray[i].quantity
+            price += (cartArray[i].offer_price ? cartArray[i].offer_price : cartArray[i].price) * cartArray[i].quantity
+        }
+        return price
+    }
+
+    function getProductPriceWithoutDiscountWithoutOffer() {
+        let price = 0;
+        for (let i = 0; i < cartArray.length; i++) {
+            price += cartArray[i].price * cartArray[i].quantity
         }
         return price
     }
@@ -466,7 +556,7 @@ export default function OrderSummary(props) {
                                         width: "100%",
                                         fontFamily: "Roboto-Regular",
                                         fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
-                                        
+
                                     }}
                                         // returnKeyType="go"
                                         // onSubmitEditing={() => {
@@ -522,6 +612,8 @@ export default function OrderSummary(props) {
                                 </View>}
 
                         </View>
+                        
+                        
 
                         <View style={{
                             width: "90%", alignSelf: "center", backgroundColor: Color.white,
@@ -538,6 +630,7 @@ export default function OrderSummary(props) {
                                 backgroundColor: Color.veryLightGrey
                             }} />
 
+
                             <View style={{
                                 alignSelf: "stretch", margin: normalize(10), flexDirection: "row",
                                 justifyContent: "space-between"
@@ -545,11 +638,26 @@ export default function OrderSummary(props) {
                                 <Text style={{
                                     fontSize: normalize(12), color: Color.darkGrey,
                                     fontFamily: "Roboto-Regular", marginTop: normalize(10), marginLeft: normalize(10)
-                                }}>{`Price (${getTotalProductQuantity()} items):`}</Text>
+                                }}>{`MRP (${getTotalProductQuantity()} items):`}</Text>
 
                                 <Text style={{
                                     fontSize: normalize(14), color: Color.navyBlue,
                                     fontFamily: "Roboto-Medium", marginTop: normalize(10), marginLeft: normalize(10)
+                                }}>{`₹${totalPriceNoDiscountNoOffer}`}</Text>
+                            </View>
+
+                            <View style={{
+                                alignSelf: "stretch", margin: normalize(10), marginTop: normalize(1), flexDirection: "row",
+                                justifyContent: "space-between"
+                            }}>
+                                <Text style={{
+                                    fontSize: normalize(12), color: Color.darkGrey,
+                                    fontFamily: "Roboto-Regular", marginLeft: normalize(10)
+                                }}>{`Offer Price (${getTotalProductQuantity()} items):`}</Text>
+
+                                <Text style={{
+                                    fontSize: normalize(14), color: Color.navyBlue,
+                                    fontFamily: "Roboto-Medium", marginLeft: normalize(10)
                                 }}>{`₹${totalPriceNoDiscount}`}</Text>
                             </View>
 

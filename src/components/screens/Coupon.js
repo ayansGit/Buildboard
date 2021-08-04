@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from "react-redux"
 import {
     SafeAreaView,
     StyleSheet,
@@ -9,7 +10,7 @@ import {
     FlatList,
     TouchableOpacity,
     Image,
-    Platform
+    Platform, BackHandler
 } from 'react-native';
 import Header from "../common/Header"
 import normalize from "../../utils/dimen"
@@ -19,19 +20,31 @@ import { getRequest } from "../../utils/apiRequest"
 import { immersiveModeOn, immersiveModeOff } from 'react-native-android-immersive-mode';
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import { getToken, setCoupon } from "../../utils/storage";
-
+import { addToCartRequest } from "../../actions/ProductAction";
 
 
 export default function Coupon(props) {
 
     const [isSignedIn, setSignedIn] = useState(false)
     const [couponList, setCouponList] = useState([])
+    const dispatch = useDispatch()
+    const cart = useSelector(state => state.product.cart)
 
     useEffect(() => {
         console.log("Cat id: ", props.route.params)
         initialize()
         getCouponList()
+        // const backHandler = BackHandler.addEventListener(
+        //     "hardwareBackPress",
+        //     backAction
+        // );
+        // return () => backHandler.remove();
     }, [])
+
+    const backAction = () => {
+        props.navigation.navigate("OrderSummary", { cartList: cart })
+        return true;
+    };
 
     async function initialize() {
         try {
@@ -55,6 +68,28 @@ export default function Coupon(props) {
         } catch (error) {
             console.log("ERROR", error)
         }
+    }
+
+    async function getCartList() {
+        let token = await getToken()
+        if (token != null && token != undefined && token.length > 0) {
+            try {
+                let header = {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+                let response = await getRequest(`user/cart/list`, header)
+                console.log("RESPONSE", response)
+                if (response.success) {
+                    dispatch(addToCartRequest(response.data))
+                    getCouponList()
+                }
+
+            } catch (error) {
+                console.log("ERROR", error)
+            }
+        }
+
     }
 
     async function addCoupon(data) {
@@ -84,7 +119,7 @@ export default function Coupon(props) {
                 onPress={() => {
                     // props.navigation.navigate("ProductList", { categoryId: data.item.id, categoryName: data.item.name })
                     setCoupon(data.item)
-                    props.navigation.goBack()
+                    props.navigation.navigate("OrderSummary", { cartList: cart })
                 }}>
                 <Image
                     style={{ width: normalize(30), height: normalize(30) }}
