@@ -169,7 +169,7 @@ export default function NavigationDrawerMenu(props) {
 
                     <TouchableOpacity
                         disabled={loading}
-                        onPress={async () => { await Linking.openURL("http://buildboardfurnishers.com/about-us"); }}
+                        onPress={async () => { await Linking.openURL("https://buildboardfurnishers.com/about-us"); }}
                         style={{ width: "100%", alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey }}>
                         <Text style={{
                             color: Color.darkGrey, fontSize: normalize(12),

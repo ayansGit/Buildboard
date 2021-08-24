@@ -201,7 +201,7 @@ export default function Settings(props) {
 
                         <TouchableOpacity
                             disabled={loading}
-                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/privacy-policy"); }}
+                            onPress={async () => { await Linking.openURL("https://buildboardfurnishers.com/privacy-policy"); }}
                             style={{
                                 width: "90%", height: normalize(45),
                                 backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
@@ -218,7 +218,7 @@ export default function Settings(props) {
 
                         <TouchableOpacity
                             disabled={loading}
-                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/terms-and-Conditions"); }}
+                            onPress={async () => { await Linking.openURL("https://buildboardfurnishers.com/terms-and-Conditions"); }}
                             style={{
                                 width: "90%", height: normalize(45),
                                 backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),
@@ -235,7 +235,7 @@ export default function Settings(props) {
 
                         <TouchableOpacity
                             disabled={loading}
-                            onPress={async () => { await Linking.openURL("https://buildboard-furnishers.web.app/shipping-policy"); }}
+                            onPress={async () => { await Linking.openURL("https://buildboardfurnishers.com/shipping-policy"); }}
                             style={{
                                 width: "90%", height: normalize(45),
                                 backgroundColor: Color.white, borderRadius: normalize(5), elevation: normalize(8),

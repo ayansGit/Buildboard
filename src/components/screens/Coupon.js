@@ -26,6 +26,7 @@ import { addToCartRequest } from "../../actions/ProductAction";
 export default function Coupon(props) {
 
     const [isSignedIn, setSignedIn] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [couponList, setCouponList] = useState([])
     const dispatch = useDispatch()
     const cart = useSelector(state => state.product.cart)
@@ -60,6 +61,7 @@ export default function Coupon(props) {
     }
 
     async function getCouponList() {
+        setLoading(true)
         try {
             let response = await getRequest("user/coupon/list")
             console.log("RESPONSE", response)
@@ -68,6 +70,7 @@ export default function Coupon(props) {
         } catch (error) {
             console.log("ERROR", error)
         }
+        setLoading(false)
     }
 
     async function getCartList() {
@@ -172,6 +175,12 @@ export default function Coupon(props) {
                             renderItem={(data) => renderCategoryItem(data)}
                             keyExtractor={(item, index) => index.toString()}
                         />
+
+                        {couponList.length==0 && loading == false}
+                        <Text style={{
+                            width: "100%", fontFamily: "Roboto-Regular", color: Color.darkGrey,
+                            fontSize: normalize(14), top: normalize(100), textAlign: "center", position: "absolute"
+                        }}>Coupons not available</Text>
 
                     </View>
                 </View>
