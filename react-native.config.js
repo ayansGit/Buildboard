@@ -1,4 +1,4 @@
-module.exports = {
+pmodule.exports = {
     project: {
       ios: {},
       android: {}, // grouped into "project"
