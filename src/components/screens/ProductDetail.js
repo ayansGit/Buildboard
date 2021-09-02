@@ -54,6 +54,7 @@ export default function ProductDetail(props) {
     const [productImages, setProductImages] = useState([])
     const [selectedColor, setSelectedColor] = useState("")
     const [wishlist, setWishlist] = useState([])
+    const [selectedImagePos, setSelectedImagePos] = useState(0)
     const dispatch = useDispatch()
     const cart = useSelector(state => state.product.cart)
 
@@ -304,9 +305,10 @@ export default function ProductDetail(props) {
                                         {productImages.length > 0 ?
                                             <ViewPager
                                                 pageMargin={normalize(10)}
+                                                onPageSelected={(event) => { setSelectedImagePos(event.nativeEvent.position) }}
                                                 style={{ width: "100%", height: normalize(200), marginTop: normalize(5) }}>
                                                 {productImages.map((value, index) => {
-                                                    console.log("ll", value)
+                                                    
                                                     return (
                                                         <TouchableOpacity
                                                             onPress={() => props.navigation.navigate("ProductImage", { productImages: productImages })}
@@ -322,6 +324,22 @@ export default function ProductDetail(props) {
 
                                             </ViewPager> : null}
 
+
+                                        <View style={{ flexDirection: "row", position: "absolute", alignSelf: "center", bottom: normalize(4) }}>
+                                        {
+                                            productImages.map((value, index) => {
+
+                                                return (
+                                                    <View
+                                                        style={{
+                                                            height: normalize(7), width: normalize(7), borderRadius: normalize(4), backgroundColor: selectedImagePos == index? Color.blue: null,
+                                                            borderWidth: normalize(1), borderColor: Color.blue, margin: normalize(2)
+                                                        }} />
+                                                )
+                                            })
+                                        }
+                                        </View>
+                                        
 
                                         <TouchableOpacity
                                             style={{ position: "absolute", bottom: normalize(9), right: normalize(10) }}
@@ -389,7 +407,7 @@ export default function ProductDetail(props) {
                                                 }}>{`₹${product.offer_price}`}</Text>
                                                 <Text style={{
                                                     fontFamily: "Roboto-Regular", fontSize: normalize(14), marginLeft: normalize(10), color: Color.grey,
-                                                    textDecorationLine: "line-through", 
+                                                    textDecorationLine: "line-through",
                                                 }}>{`₹${product.price}`}</Text>
                                                 <Text style={{
                                                     fontFamily: "Roboto-Regular", fontSize: normalize(14), marginLeft: normalize(3), color: Color.red,

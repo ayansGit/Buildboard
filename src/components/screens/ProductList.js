@@ -127,29 +127,36 @@ export default function ProductList(props) {
 
 
     function sortProduct(sortType) {
+        console.log("gg", sortType)
         if (products.length > 0) {
 
             let productArr = products
             switch (sortType) {
 
-                case SortType.A_TO_Z: {
+                case 0: {
                     productArr.sort(dynamicSort("name"))
                     break
                 }
 
-                case SortType.Z_TO_A: {
+                case 1: {
                     productArr.sort(dynamicSort("-name"))
                     break
                 }
 
-                case SortType.PRICE_HIGHT_TO_LOW: {
-                    productArr.sort(function (product1, product2) { return (product2.price - product1.price) })
+                case 2: {
+                    console.log("HTL")
+                    let arr = productArr
+                    arr.sort(function (product1, product2) { return ( getProductDisplayPrice(product2) - getProductDisplayPrice(product1)) })
+                    productArr = arr
                     break
 
                 }
 
-                case SortType.PRICE_LOW_TO_HIGH: {
-                    productArr.sort(function (product1, product2) { return (product1.price - product2.price) })
+                case 3: {
+                    console.log("LTH")
+                    let arr = productArr
+                    arr.sort(function (product1, product2) { return ( getProductDisplayPrice(product2) - getProductDisplayPrice(product1)) })
+                    productArr = arr.reverse()
                     break
                 }
 
@@ -157,6 +164,10 @@ export default function ProductList(props) {
             setProducts(productArr)
         }
 
+    }
+
+    function getProductDisplayPrice(product){
+        return product.offer_price ? product.offer_price: product.price
     }
     function dynamicSort(property) {
         var sortOrder = 1;

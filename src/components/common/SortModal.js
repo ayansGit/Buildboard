@@ -64,10 +64,11 @@ function SortModal(props) {
                     <RadioButton.Group
                         value={selectedPos}
                         onValueChange={(value) => {
-                            setSelectedPos(value)
-                            if (props.onSortItemSelected) {
-                                props.onSortItemSelected(sortParameter[value].type)
-                            }
+                            
+                            // setSelectedPos(value)
+                            // if (props.onSortItemSelected) {
+                            //     props.onSortItemSelected(sortParameter[value].type)
+                            // }
                         }}>
                         <FlatList
                             style={{ width: "100%", marginTop: normalize(5) }}
@@ -76,6 +77,7 @@ function SortModal(props) {
                                 return (
                                     <TouchableOpacity
                                         onPress={() => {
+                                            console.log("SEL_VAL: ", data.item.type)
                                             setSelectedPos(data.item.type)
                                             if (props.onSortItemSelected) {
                                                 props.onSortItemSelected(data.item.type)
