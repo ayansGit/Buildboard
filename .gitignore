@@ -29,7 +29,7 @@ build/
 local.properties
 *.iml
 *.apk
-*.abb
+*.aab
 
 # node.js
 #
