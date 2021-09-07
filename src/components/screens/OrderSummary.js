@@ -369,7 +369,7 @@ export default function OrderSummary(props) {
             description: 'Order price',
             image: "https://buildboard-furnishers.web.app/assets/images/logo.png",
             currency: 'INR',
-            key: 'rzp_test_NIv9pU24SLVgtS',
+            key: 'rzp_live_NxP4DQL6CRU8MO', //'rzp_test_NIv9pU24SLVgtS',
             amount: `${(getProductPrice()) * 100}`,
             name: 'Buildboard Furnishers',
             prefill: {

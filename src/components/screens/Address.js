@@ -338,7 +338,7 @@ export default function Address(props) {
                                     marginTop: normalize(15)
                                 }}>
                                     <Picker
-                                        selectedValue={5}
+                                        selectedValue={""}
                                         width={"100%"}
                                         textAlign={"left"}
                                         data={states}
