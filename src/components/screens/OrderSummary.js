@@ -121,7 +121,7 @@ export default function OrderSummary(props) {
         let token = await getToken()
         if (token != null && token != undefined && token.length > 0) {
             try {
-                let couponData =  await getCoupon()
+                let couponData = await getCoupon()
                 if (couponData != null)
                     setCouponCheking(true)
                 let header = {
@@ -540,13 +540,24 @@ export default function OrderSummary(props) {
                             </TouchableOpacity>
                         </View>
 
+                        {discount == 0 ?
+                            <Text
+                                style={{
+                                    alignSelf: "center",
+                                    fontFamily: "Roboto-Regular",
+                                    fontSize: normalize(10), color: Color.blue, marginTop: normalize(20)
+
+                                }}
+                            >Tap on Add button to check for available coupons</Text> : null}
+
 
                         <View style={{
                             width: "90%", alignSelf: "center", backgroundColor: Color.white, padding: normalize(15),
                             borderRadius: normalize(10), elevation: normalize(8), shadowColor: Color.black,
                             shadowOpacity: 0.3, shadowRadius: normalize(10), shadowOffset: { height: 0, width: 0 },
-                            alignItems: "flex-start", marginTop: normalize(10)
+                            alignItems: "flex-start", marginTop: normalize(8)
                         }}>
+
 
 
                             {discount == 0 ?
@@ -558,15 +569,6 @@ export default function OrderSummary(props) {
                                         fontSize: normalize(14), color: Color.darkGrey, marginTop: Platform.OS == "ios" ? normalize(15) : 0,
 
                                     }}
-                                        // returnKeyType="go"
-                                        // onSubmitEditing={() => {
-                                        //     checkCoupon(couponCode)
-                                        // }}
-                                        value={couponCode}
-                                        // onChangeText={(text) => setCouponCode(text)}
-                                        // placeholder={"Coupon code"}
-                                        // placeholderTextColor={Color.grey}
-                                        selectionColor={Color.blue}
                                         numberOfLines={1}>Choose a coupon code</Text>
 
                                     <TouchableOpacity
@@ -612,8 +614,8 @@ export default function OrderSummary(props) {
                                 </View>}
 
                         </View>
-                        
-                        
+
+
 
                         <View style={{
                             width: "90%", alignSelf: "center", backgroundColor: Color.white,

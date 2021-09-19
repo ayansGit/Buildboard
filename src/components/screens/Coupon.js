@@ -176,11 +176,11 @@ export default function Coupon(props) {
                             keyExtractor={(item, index) => index.toString()}
                         />
 
-                        {couponList.length==0 && loading == false}
-                        <Text style={{
+                        {(couponList.length==0 && loading == false) ? <Text style={{
                             width: "100%", fontFamily: "Roboto-Regular", color: Color.darkGrey,
                             fontSize: normalize(14), top: normalize(100), textAlign: "center", position: "absolute"
-                        }}>Coupons not available</Text>
+                        }}>Coupons not available</Text> : null} 
+                        
 
                     </View>
                 </View>

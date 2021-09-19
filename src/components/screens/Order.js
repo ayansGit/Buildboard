@@ -207,7 +207,7 @@ function Order(props) {
                                             color: Color.darkGrey, marginTop: normalize(2)
                                         }}>{data.item.status}</Text>
 
-                                        {data.item.status == "Ordered" || data.item.status == "Delivered" ?
+                                        <View style={{ width: "90%", flexDirection: "row", justifyContent: "space-around", marginTop: normalize(10) }}>
                                             <TouchableOpacity style={{
                                                 backgroundColor: Color.blue, borderRadius: normalize(5),
                                                 elevation: normalize(8), alignSelf: "center",
@@ -215,27 +215,48 @@ function Order(props) {
                                                 shadowRadius: normalize(5),
                                             }}
                                                 onPress={() => {
-                                                    setPosition(data.index)
-                                                    if (data.item.status == "Ordered") {
-                                                        updateOrder(data.item.order_id, "Cancelled")
-                                                    } else if (data.item.status == "Delivered") {
-                                                        updateOrder(data.item.order_id, "Return")
-                                                    }
+                                                    props.navigation.navigate("TrackOrder", { productDetails: data.item })
                                                 }}>
 
-                                                {position == data.index ?
-                                                    <ActivityIndicator style={{
-                                                        marginTop: normalize(6), marginBottom: normalize(6),
-                                                        marginLeft: normalize(20), marginRight: normalize(20)
-                                                    }} size="small" color={Color.white} /> :
-                                                    <Text style={{
-                                                        fontSize: normalize(10), fontFamily: "Roboto-Regular",
-                                                        color: Color.white, marginTop: normalize(6), marginBottom: normalize(6),
-                                                        marginLeft: normalize(20), marginRight: normalize(20)
-                                                    }}>{data.item.status == "Ordered" ? "CANCEL ORDER" : "RETURN ORDER"}</Text>}
+                                                <Text style={{
+                                                    fontSize: normalize(10), fontFamily: "Roboto-Regular",
+                                                    color: Color.white, marginTop: normalize(6), marginBottom: normalize(6),
+                                                    marginLeft: normalize(20), marginRight: normalize(20)
+                                                }}>TRACK ORDER</Text>
+
+                                            </TouchableOpacity>
+
+                                            {data.item.status == "Ordered" || data.item.status == "Delivered" ?
+                                                <TouchableOpacity style={{
+                                                    backgroundColor: Color.blue, borderRadius: normalize(5),
+                                                    elevation: normalize(8), alignSelf: "center",
+                                                    shadowColor: Color.black, shadowOpacity: 0.3, shadowOffset: { height: 0, width: 0 },
+                                                    shadowRadius: normalize(5),
+                                                }}
+                                                    onPress={() => {
+                                                        setPosition(data.index)
+                                                        if (data.item.status == "Ordered") {
+                                                            updateOrder(data.item.order_id, "Cancelled")
+                                                        } else if (data.item.status == "Delivered") {
+                                                            updateOrder(data.item.order_id, "Return")
+                                                        }
+                                                    }}>
+
+                                                    {position == data.index ?
+                                                        <ActivityIndicator style={{
+                                                            marginTop: normalize(6), marginBottom: normalize(6),
+                                                            marginLeft: normalize(20), marginRight: normalize(20)
+                                                        }} size="small" color={Color.white} /> :
+                                                        <Text style={{
+                                                            fontSize: normalize(10), fontFamily: "Roboto-Regular",
+                                                            color: Color.white, marginTop: normalize(6), marginBottom: normalize(6),
+                                                            marginLeft: normalize(20), marginRight: normalize(20)
+                                                        }}>{data.item.status == "Ordered" ? "CANCEL ORDER" : "RETURN ORDER"}</Text>}
 
 
-                                            </TouchableOpacity> : null}
+                                                </TouchableOpacity> : null}
+                                        </View>
+
 
                                     </View>
                                 )

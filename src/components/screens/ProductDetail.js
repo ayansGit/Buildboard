@@ -47,6 +47,7 @@ export default function ProductDetail(props) {
     const [properties, setProperties] = useState(false)
     const [refund, setRefund] = useState(false)
     const [feature, setFeature] = useState(false)
+    const [warranty, setWarranty] = useState(false)
     const [isAddedToWishlist, setAddToWishlist] = useState(false)
     const [pincode, setPincode] = useState("")
     const [pincodeCheking, setPincodeCheking] = useState("")
@@ -760,6 +761,41 @@ export default function ProductDetail(props) {
                                             }}>
                                             {product.returns ?
                                                 <HTML source={{ html: product.returns }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
+
+                                        </ScrollView> : null}
+
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setWarranty(!warranty)
+                                                if (!warranty) {
+                                                    scrollViewRef.current.scrollToEnd({ animated: true })
+                                                }
+                                            }}
+                                            style={{
+                                                width: "100%", flexDirection: "row", justifyContent: "space-between",
+                                                alignItems: "center", borderBottomWidth: normalize(1), borderBottomColor: Color.darkGrey, paddingTop: normalize(10),
+                                                paddingBottom: normalize(10), paddingLeft: normalize(10), paddingRight: normalize(10),
+                                            }}>
+                                            <Text style={{
+                                                fontFamily: "Roboto-Medium", fontSize: normalize(14),
+                                                color: Color.darkGrey,
+                                            }}>WARRANTY</Text>
+
+                                            <Image
+                                                style={{ width: normalize(16), height: normalize(16) }}
+                                                source={warranty ? ImagePath.up_arrow : ImagePath.down_arrow} />
+
+                                        </TouchableOpacity>
+
+                                        {warranty ? <ScrollView
+                                            nestedScrollEnabled={true}
+                                            style={{
+                                                width: "100%", height: normalize(130),
+                                                borderBottomWidth: normalize(1),
+                                                borderBottomColor: Color.darkGrey, padding: normalize(15)
+                                            }}>
+                                            {product.returns ?
+                                                <HTML source={{ html: product.warranty }} contentWidth={contentWidth} containerStyle={{ marginLeft: normalize(10), marginRight: normalize(10) }} /> : null}
 
                                         </ScrollView> : null}
 
