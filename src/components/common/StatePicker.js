@@ -19,7 +19,12 @@ function StatePicker(props) {
     function getSelectedValueText() {
 
         if (props.data.length > 0) {
-            return props.data[Number(props.selectedValue)].name;
+            for(let i=0; i< props.data.length; i++){
+                if(props.data[i].state_id == props.selectedValue){
+                    return props.data[i].name;
+                }
+            }
+            
         } else
             return props.emptySelectText
     }
@@ -100,7 +105,7 @@ function StatePicker(props) {
                             {props.data.map((item, itemIndex) => {
 
                                 return (
-                                    <Picker.Item key={itemIndex.toString()} label={item.name} value={itemIndex.toString()} />
+                                    <Picker.Item key={itemIndex.toString()} label={item.name} value={item.state_id} />
                                 )
 
                             })
@@ -151,16 +156,15 @@ function StatePicker(props) {
                     {props.data.map((item, index) => {
 
                         return (
-                            <Picker.Item key={index} label={item.name} value={index.toString()} />
+                            <Picker.Item key={index} label={item.name} value={item.state_id} />
                         )
                     })}
                 </Picker>
 
             }
+            {Platform.OS == "ios" ?
 
-
-            {renderIOSPicker()}
-
+                renderIOSPicker() : null}
 
 
         </View >

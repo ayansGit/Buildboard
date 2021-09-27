@@ -30,6 +30,7 @@ import { getToken } from "../../utils/storage";
 export default function Address(props) {
 
     const [loading, setLoading] = React.useState(0);
+    const [stateList, setStateList] = React.useState([])
     const states = useSelector(state => state.user.stateList)
 
     const [addressRequest, setAddressRequest] = useState({
@@ -72,6 +73,8 @@ export default function Address(props) {
                 ...addressRequest,
                 state_id: states[0].state_id
             })
+
+        setStateList(states)
     }
 
 
@@ -109,14 +112,14 @@ export default function Address(props) {
                 let urlKey = props.route.params.forUpdate ? "update" : "store"
 
                 let request = {}
-                if(props.route.params.forUpdate){
+                if (props.route.params.forUpdate) {
                     request = addressRequest
                     request.id = props.route.params.addressDetails.id
-                }else{
+                } else {
                     request = addressRequest
                 }
 
-                let response =  await postRequest(`user/address/${urlKey}`, request, header)
+                let response = await postRequest(`user/address/${urlKey}`, request, header)
                 console.log("RESPOSNE", response)
                 if (response.success) {
                     if (Platform.OS == "android") {
@@ -331,30 +334,35 @@ export default function Address(props) {
                                         }} />
                                 </View>
 
-                                <View style={{
-                                    width: "90%", height: normalize(45), borderWidth: normalize(1),
-                                    borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
-                                    alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
-                                    marginTop: normalize(15)
-                                }}>
-                                    <Picker
-                                        selectedValue={""}
-                                        width={"100%"}
-                                        textAlign={"left"}
-                                        data={states}
-                                        textSize={12}
-                                        textPadding={20}
-                                        emptySelectText={"Select State"}
-                                        onPickerItemSelected={(value, index) => {
-                                            console.log("VALUE", value)
-                                            setAddressRequest({
-                                                ...addressRequest,
-                                                state_id: value.state_id
-                                            })
 
-                                        }}
-                                    />
-                                </View>
+                                {stateList.length>0 ?
+                                    <View style={{
+                                        width: "90%", height: normalize(45), borderWidth: normalize(1),
+                                        borderRadius: normalize(25), flexDirection: "row", justifyContent: "center",
+                                        alignItems: 'center', paddingStart: normalize(15), paddingEnd: normalize(15),
+                                        marginTop: normalize(15)
+                                    }}>
+                                        <Picker
+                                            selectedValue={addressRequest.state_id.toString()}
+                                            width={"100%"}
+                                            textAlign={"left"}
+                                            data={stateList}
+                                            itemParam = {"state_id"}
+                                            textSize={12}
+                                            textPadding={20}
+                                            emptySelectText={"Select State"}
+                                            onPickerItemSelected={(value, index) => {
+                                                console.log("VALUE", value)
+                                                setAddressRequest({
+                                                    ...addressRequest,
+                                                    state_id: value.state_id
+                                                })
+
+                                            }}
+                                        />
+                                    </View> : null}
+
+
 
                                 <View style={{
                                     width: "90%", height: normalize(45), borderWidth: normalize(1),
