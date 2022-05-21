@@ -50,7 +50,7 @@ export default function Cart(props) {
                 if (response.success) {
                     dispatch(addToCartRequest(response.data))
                 }
-
+                
             } catch (error) {
                 console.log("ERROR", error)
             }

@@ -351,6 +351,7 @@ export default function ProductList(props) {
                                 </TouchableOpacity> : null}
 
                         </View>
+                        
                         <FlatList
                             style={{ width: "100%", }}
                             columnWrapperStyle={{
